@@ -245,7 +245,7 @@ module.exports = {
              
                 },
                 {
-                    id: token.owner,
+                    id: process.env.OWNER_ID,
                     allow:["ViewChannel", "SendMessages", PermissionFlagsBits.ManageMessages],
                 }
             ];
@@ -636,7 +636,7 @@ module.exports = {
          
             },
             {
-                id: token.owner,
+                id: process.env.OWNER_ID,
                 allow:["ViewChannel", "SendMessages", PermissionFlagsBits.ManageMessages],
             },
             {
@@ -799,7 +799,7 @@ module.exports = {
         }
     }
     if(customId === "fecharticket") {
-        if (!interaction.member.roles.cache.has(await config.get("cargo_staff")) && interaction.user.id !== token.owner) return interaction.deferUpdate();
+        if (!interaction.member.roles.cache.has(await config.get("cargo_staff")) && interaction.user.id !== process.env.OWNER_ID) return interaction.deferUpdate();
         const modal = new ModalBuilder()
         .setCustomId("fecharticket_modal")
         .setTitle("Fechamento do Ticket");
@@ -817,7 +817,7 @@ module.exports = {
         return interaction.showModal(modal);
     }
     if(customId === "fecharticket_modal") {
-        if (!interaction.member.roles.cache.has(await config.get("cargo_staff")) && interaction.user.id !== token.owner) return interaction.deferUpdate();
+        if (!interaction.member.roles.cache.has(await config.get("cargo_staff")) && interaction.user.id !== process.env.OWNER_ID) return interaction.deferUpdate();
         const text = interaction.fields.getTextInputValue("text") || "`Não Informado`";
         const mas = await interaction.reply({content:`🔔 | Esse Ticket será Finalizado em 5 segundos...`});
         const channel = interaction.channel;
@@ -1049,7 +1049,7 @@ module.exports = {
 
     }
     if(customId === "painelstaff") {
-        if (!interaction.member.roles.cache.has(await config.get("cargo_staff")) && interaction.user.id !== token.owner) return interaction.deferUpdate();
+        if (!interaction.member.roles.cache.has(await config.get("cargo_staff")) && interaction.user.id !== process.env.OWNER_ID) return interaction.deferUpdate();
         interaction.reply({
             embeds:[
                 new EmbedBuilder()
