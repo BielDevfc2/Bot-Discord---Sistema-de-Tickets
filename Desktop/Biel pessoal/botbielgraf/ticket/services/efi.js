@@ -12,6 +12,7 @@ let cachedToken = null;
 let tokenExpiry = null;
 
 console.log(`🔐 Efí configurado: SANDBOX=${sandbox}, URL=${baseURL}`);
+console.log(`📋 Credenciais: ID="${clientId?.substring(0, 30)}...", SECRET="${clientSecret?.substring(0, 30)}..."`);
 
 /**
  * Obter token OAuth2 da Efí com retry
@@ -39,7 +40,10 @@ async function obterToken(tentativa = 1) {
           Authorization: `Basic ${auth}`,
           "Content-Type": "application/json"
         },
-        timeout: 10000
+        timeout: 30000,
+        rejectUnauthorized: false,
+        httpAgent: require("http").globalAgent,
+        httpsAgent: require("https").globalAgent
       }
     );
 
@@ -96,7 +100,10 @@ async function gerarPix(valor, descricao) {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json"
         },
-        timeout: 10000
+        timeout: 30000,
+        rejectUnauthorized: false,
+        httpAgent: require("http").globalAgent,
+        httpsAgent: require("https").globalAgent
       }
     );
 
