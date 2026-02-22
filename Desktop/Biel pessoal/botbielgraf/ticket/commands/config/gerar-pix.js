@@ -1,87 +1,70 @@
-const { ApplicationCommandType, ApplicationCommandOptionType, EmbedBuilder } = require("discord.js");
+const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 
 module.exports = {
-    name: "gerar-pix",
-    description: "[💳] Gerar PIX via Efí Bank",
-    type: ApplicationCommandType.ChatInput,
-    options: [
-        {
-            name: "valor",
-            type: ApplicationCommandOptionType.Number,
-            required: true,
-            description: "Valor em reais",
-            min_value: 0.01,
-            max_value: 999999.99
-        }
-    ],
-    run: async (client, interaction) => {
-        try {
-            if (interaction.user.id !== process.env.OWNER_ID) {
-                return await interaction.reply({
-                    content: "❌ Apenas o dono pode usar!",
-                    flags: 64  // Ephemeral flag
-                });
-            }
+  data: new SlashCommandBuilder()
+    .setName("gerar-pix")
+    .setDescription("Gera um PIX com valor personalizado")
+    .addNumberOption((option) =>
+      option
+        .setName("valor")
+        .setDescription("Valor em reais")
+        .setRequired(true)
+    ),
 
-            await interaction.deferReply({ flags: 64 });  // Ephemeral flag
-
-            // Verificar se as credenciais estão configuradas
-            const clientId = process.env.EFI_CLIENT_ID;
-            const clientSecret = process.env.EFI_CLIENT_SECRET;
-            const pixKey = process.env.EFI_PIX_KEY;
-
-            if (!clientId || !clientSecret || !pixKey) {
-                return await interaction.editReply({
-                    content: "❌ **Credenciais Efí não configuradas!**\n\n" +
-                             "Adicione no Railway:\n" +
-                             "• `EFI_CLIENT_ID`\n" +
-                             "• `EFI_CLIENT_SECRET`\n" +
-                             "• `EFI_PIX_KEY`\n" +
-                             "• `EFI_SANDBOX` = true"
-                });
-            }
-
-            const valor = interaction.options.getNumber("valor");
-
-            try {
-                const { gerarPix } = require("../../services/efi");
-                
-                console.log("🔐 Tentando conectar com Efí...");
-                const cobranca = await gerarPix(valor, "Pagamento via Bot");
-
-                if (!cobranca?.pixCopiaECola) {
-                    const errorMsg = cobranca?.error || "Erro desconhecido";
-                    console.error("❌ Erro Efí:", errorMsg);
-                    
-                    return await interaction.editReply({
-                        content: `❌ **Erro ao conectar com Efí:**\n\`\`\`\n${errorMsg}\n\`\`\``
-                    });
-                }
-
-                const embed = new EmbedBuilder()
-                    .setTitle("💳 PIX Gerado com Sucesso")
-                    .setDescription(`R$ ${valor.toFixed(2)}`)
-                    .addFields({
-                        name: "📋 Código PIX (Copia e Cola)",
-                        value: `\`${cobranca.pixCopiaECola}\``,
-                        inline: false
-                    })
-                    .addFields({
-                        name: "🆔 ID Cobrança",
-                        value: `\`${cobranca.id}\``
-                    })
-                    .setColor("Green")
-                    .setTimestamp();
-
-                await interaction.editReply({ embeds: [embed] });
-            } catch (err) {
-                console.error("❌ Erro ao gerar PIX:", err);
-                await interaction.editReply({
-                    content: `❌ **Erro:**\n\`\`\`\n${err.message}\n\`\`\``
-                });
-            }
-        } catch (error) {
-            console.error("Erro em gerar-pix:", error);
-        }
+  async execute(interaction) {
+    // Apenas OWNER pode usar
+    if (interaction.user.id !== process.env.OWNER_ID) {
+      return interaction.reply({
+        content: "❌ Apenas o dono pode usar este comando!",
+        flags: 64,
+      });
     }
+
+    const valor = interaction.options.getNumber("valor");
+    const pixKey = process.env.EFI_PIX_KEY;
+
+    if (!pixKey) {
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setColor("Red")
+            .setTitle("❌ Erro")
+            .setDescription("EFI_PIX_KEY não configurada!")
+            .setTimestamp(),
+        ],
+        flags: 64,
+      });
+    }
+
+    try {
+      // Embed com informações do PIX
+      const embed = new EmbedBuilder()
+        .setColor("Green")
+        .setTitle("💚 PIX Gerado!")
+        .setDescription(`**Valor:** R$ ${valor.toFixed(2)}`)
+        .addFields({
+          name: "🔑 Chave PIX (Copiar e Colar)",
+          value: `\`\`\`${pixKey}\`\`\``,
+          inline: false,
+        })
+        .setFooter({ text: `Solicitado por ${interaction.user.username}` })
+        .setTimestamp();
+
+      return interaction.reply({
+        embeds: [embed],
+        flags: 64,
+      });
+    } catch (error) {
+      console.error("Erro ao gerar PIX:", error);
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setColor("Red")
+            .setTitle("❌ Erro ao Gerar PIX")
+            .setDescription(`${error.message}`),
+        ],
+        flags: 64,
+      });
+    }
+  },
 };
