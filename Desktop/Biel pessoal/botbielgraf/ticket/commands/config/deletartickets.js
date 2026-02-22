@@ -1,7 +1,7 @@
 const { ApplicationCommandType, EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder } = require("discord.js");
 const {JsonDatabase} = require("wio.db");
 const config = new JsonDatabase({databasePath:"./db/config.json"});
-const token = require("../../token.json");
+
 const { QuickDB } = require("quick.db");
 const db = new QuickDB({table:"ticket"});
 

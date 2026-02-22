@@ -3,7 +3,7 @@ const { JsonDatabase } = require("wio.db");
 const config = new JsonDatabase({databasePath:"./db/config.json"});
 const axios = require("axios");
 const { ApplicationCommandType, ApplicationCommandOptionType } = require("discord.js");
-const token = require("../../token.json");
+
 
 module.exports = {
     name: "trocarqrcode",

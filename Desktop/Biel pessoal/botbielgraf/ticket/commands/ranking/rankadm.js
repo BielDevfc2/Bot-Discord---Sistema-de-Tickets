@@ -2,7 +2,7 @@ const { ApplicationCommandType, EmbedBuilder } = require("discord.js");
 const {JsonDatabase} = require("wio.db");
 const config = new JsonDatabase({databasePath:"./db/config.json"});
 const perfil = new JsonDatabase({databasePath:"./db/perfil.json"});
-const token = require("../../token.json");
+
 
 
 module.exports = {

@@ -1,6 +1,6 @@
 const { ApplicationCommandType, ActionRowBuilder, ModalBuilder, TextInputBuilder } = require("discord.js");
 const {JsonDatabase} = require("wio.db");
-const token = require("../../token.json");
+
 
 
 module.exports = { 

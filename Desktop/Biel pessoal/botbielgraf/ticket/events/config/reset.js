@@ -3,7 +3,7 @@ const {JsonDatabase} = require("wio.db");
 const config = new JsonDatabase({databasePath:"./db/config.json"});
 const perfil = new JsonDatabase({databasePath:"./db/perfil.json"});
 const ct = new JsonDatabase({databasePath:"./db/category.json"});
-const token = require("../../token.json");
+
 const { QuickDB } = require("quick.db");
 const db = new QuickDB({table:"ticket"});
 
