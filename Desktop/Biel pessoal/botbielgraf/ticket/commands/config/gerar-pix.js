@@ -19,11 +19,11 @@ module.exports = {
             if (interaction.user.id !== process.env.OWNER_ID) {
                 return await interaction.reply({
                     content: "❌ Apenas o dono pode usar!",
-                    ephemeral: true
+                    flags: 64  // Ephemeral flag
                 });
             }
 
-            await interaction.deferReply({ ephemeral: true });
+            await interaction.deferReply({ flags: 64 });  // Ephemeral flag
 
             // Verificar se as credenciais estão configuradas
             const clientId = process.env.EFI_CLIENT_ID;

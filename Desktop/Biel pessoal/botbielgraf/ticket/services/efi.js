@@ -11,10 +11,12 @@ const baseURL = sandbox
 let cachedToken = null;
 let tokenExpiry = null;
 
+console.log(`🔐 Efí configurado: SANDBOX=${sandbox}, URL=${baseURL}`);
+
 /**
- * Obter token OAuth2 da Efí
+ * Obter token OAuth2 da Efí com retry
  */
-async function obterToken() {
+async function obterToken(tentativa = 1) {
   // Se token em cache ainda é válido, usar ele
   if (cachedToken && tokenExpiry && Date.now() < tokenExpiry) {
     return cachedToken;
@@ -25,6 +27,8 @@ async function obterToken() {
       throw new Error(`Credenciais incompletas: CLIENT_ID=${!!clientId}, SECRET=${!!clientSecret}`);
     }
 
+    console.log(`🔐 Obtendo token Efí (tentativa ${tentativa})...`);
+
     const auth = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
 
     const response = await axios.post(
@@ -34,19 +38,26 @@ async function obterToken() {
         headers: {
           Authorization: `Basic ${auth}`,
           "Content-Type": "application/json"
-        }
+        },
+        timeout: 10000
       }
     );
 
     cachedToken = response.data.access_token;
-    // Token expira em 3600 segundos, usar 3500 para segurança
     tokenExpiry = Date.now() + (3500 * 1000);
 
     console.log("✅ Token Efí gerado com sucesso");
     return cachedToken;
   } catch (error) {
     const errorMsg = error.response?.data?.message || error.response?.data?.error_description || error.message;
-    console.error("❌ Erro ao obter token Efí:", errorMsg);
+    console.error(`❌ Erro ao obter token Efí (${error.code}):`, errorMsg);
+    
+    // Retry uma vez
+    if (tentativa < 2) {
+      console.log("🔄 Tentando novamente...");
+      return await obterToken(tentativa + 1);
+    }
+    
     throw new Error(`Falha na autenticação Efí: ${errorMsg}`);
   }
 }
@@ -57,16 +68,22 @@ async function obterToken() {
 async function gerarPix(valor, descricao) {
   try {
     if (!clientId || !clientSecret || !process.env.EFI_PIX_KEY) {
-      throw new Error("Credenciais da Efí não configuradas (CLIENT_ID, SECRET, PIX_KEY)");
+      throw new Error(
+        `Credenciais incompletas:\n` +
+        `EFI_CLIENT_ID: ${!!clientId}\n` +
+        `EFI_CLIENT_SECRET: ${!!clientSecret}\n` +
+        `EFI_PIX_KEY: ${!!process.env.EFI_PIX_KEY}`
+      );
     }
+
+    console.log(`💳 Gerando PIX: R$ ${valor.toFixed(2)} (${descricao})`);
 
     const token = await obterToken();
 
-    // 💳 Criar cobrança
     const response = await axios.post(
       `${baseURL}/v2/cob`,
       {
-        calendario: { expiracao: 3600 }, // Expira em 1 hora
+        calendario: { expiracao: 3600 },
         valor: { original: valor.toFixed(2) },
         chave: process.env.EFI_PIX_KEY,
         solicitacaoPagador: descricao
@@ -75,7 +92,8 @@ async function gerarPix(valor, descricao) {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json"
-        }
+        },
+        timeout: 10000
       }
     );
 
@@ -83,7 +101,11 @@ async function gerarPix(valor, descricao) {
     return response.data;
 
   } catch (error) {
-    const errorMsg = error.response?.data?.message || error.response?.data?.error || error.message;
+    const errorMsg = error.response?.data?.message || 
+                     error.response?.data?.error || 
+                     error.message ||
+                     "Erro desconhecido";
+    
     console.error("❌ Erro ao criar cobrança Efí:", errorMsg);
     return { error: errorMsg };
   }
@@ -102,7 +124,8 @@ async function verificarCobranca(pixId) {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json"
-        }
+        },
+        timeout: 10000
       }
     );
 
