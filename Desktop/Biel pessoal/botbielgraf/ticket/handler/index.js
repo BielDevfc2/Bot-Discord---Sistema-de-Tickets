@@ -47,7 +47,8 @@ module.exports = async (client) => {
 
   console.log(`\n🎯 Total de comandos carregados: ${SlashsArray.length}\n`);
 
-  client.once("ready", async () => {
+  // Registrar comandos assim que o bot ficar ready
+  client.on("ready", async () => {
 
     console.log("🔄 Atualizando comandos...");
 
