@@ -2,7 +2,6 @@
     "dependencies": {
         "axios": "^1.6.8",
         "better-sqlite3": "^11.0.0",
-        "brcode": "^0.0.4",
         "debug": "^4.3.4",
         "discord-html-transcripts": "^3.2.0",
         "discord.js": "^14.14.1",
