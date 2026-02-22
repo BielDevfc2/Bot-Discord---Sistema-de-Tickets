@@ -21,6 +21,10 @@ async function obterToken() {
   }
 
   try {
+    if (!clientId || !clientSecret) {
+      throw new Error(`Credenciais incompletas: CLIENT_ID=${!!clientId}, SECRET=${!!clientSecret}`);
+    }
+
     const auth = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
 
     const response = await axios.post(
@@ -41,8 +45,9 @@ async function obterToken() {
     console.log("✅ Token Efí gerado com sucesso");
     return cachedToken;
   } catch (error) {
-    console.error("❌ Erro ao obter token Efí:", error.response?.data || error.message);
-    throw new Error("Falha ao autenticar com Efí");
+    const errorMsg = error.response?.data?.message || error.response?.data?.error_description || error.message;
+    console.error("❌ Erro ao obter token Efí:", errorMsg);
+    throw new Error(`Falha na autenticação Efí: ${errorMsg}`);
   }
 }
 
@@ -52,7 +57,7 @@ async function obterToken() {
 async function gerarPix(valor, descricao) {
   try {
     if (!clientId || !clientSecret || !process.env.EFI_PIX_KEY) {
-      throw new Error("Credenciais da Efí não configuradas");
+      throw new Error("Credenciais da Efí não configuradas (CLIENT_ID, SECRET, PIX_KEY)");
     }
 
     const token = await obterToken();
@@ -78,8 +83,9 @@ async function gerarPix(valor, descricao) {
     return response.data;
 
   } catch (error) {
-    console.error("❌ Erro ao criar cobrança Efí:", error.response?.data || error.message);
-    return null;
+    const errorMsg = error.response?.data?.message || error.response?.data?.error || error.message;
+    console.error("❌ Erro ao criar cobrança Efí:", errorMsg);
+    return { error: errorMsg };
   }
 }
 

@@ -23,34 +23,61 @@ module.exports = {
                 });
             }
 
+            await interaction.deferReply({ ephemeral: true });
+
+            // Verificar se as credenciais estão configuradas
+            const clientId = process.env.EFI_CLIENT_ID;
+            const clientSecret = process.env.EFI_CLIENT_SECRET;
+            const pixKey = process.env.EFI_PIX_KEY;
+
+            if (!clientId || !clientSecret || !pixKey) {
+                return await interaction.editReply({
+                    content: "❌ **Credenciais Efí não configuradas!**\n\n" +
+                             "Adicione no Railway:\n" +
+                             "• `EFI_CLIENT_ID`\n" +
+                             "• `EFI_CLIENT_SECRET`\n" +
+                             "• `EFI_PIX_KEY`\n" +
+                             "• `EFI_SANDBOX` = true"
+                });
+            }
+
             const valor = interaction.options.getNumber("valor");
 
             try {
                 const { gerarPix } = require("../../services/efi");
+                
+                console.log("🔐 Tentando conectar com Efí...");
                 const cobranca = await gerarPix(valor, "Pagamento via Bot");
 
                 if (!cobranca?.pixCopiaECola) {
-                    return await interaction.reply({
-                        content: "❌ Erro ao conectar com Efí",
-                        ephemeral: true
+                    const errorMsg = cobranca?.error || "Erro desconhecido";
+                    console.error("❌ Erro Efí:", errorMsg);
+                    
+                    return await interaction.editReply({
+                        content: `❌ **Erro ao conectar com Efí:**\n\`\`\`\n${errorMsg}\n\`\`\``
                     });
                 }
 
                 const embed = new EmbedBuilder()
-                    .setTitle("💳 PIX Gerado")
+                    .setTitle("💳 PIX Gerado com Sucesso")
                     .setDescription(`R$ ${valor.toFixed(2)}`)
                     .addFields({
-                        name: "Copia e Cola",
-                        value: `\`${cobranca.pixCopiaECola}\``
+                        name: "📋 Código PIX (Copia e Cola)",
+                        value: `\`${cobranca.pixCopiaECola}\``,
+                        inline: false
                     })
-                    .setColor("Green");
+                    .addFields({
+                        name: "🆔 ID Cobrança",
+                        value: `\`${cobranca.id}\``
+                    })
+                    .setColor("Green")
+                    .setTimestamp();
 
-                await interaction.reply({ embeds: [embed] });
+                await interaction.editReply({ embeds: [embed] });
             } catch (err) {
-                console.error("Erro ao gerar PIX:", err);
-                await interaction.reply({
-                    content: `❌ Erro: ${err.message}`,
-                    ephemeral: true
+                console.error("❌ Erro ao gerar PIX:", err);
+                await interaction.editReply({
+                    content: `❌ **Erro:**\n\`\`\`\n${err.message}\n\`\`\``
                 });
             }
         } catch (error) {
