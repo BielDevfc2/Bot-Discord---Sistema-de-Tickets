@@ -51,10 +51,13 @@ async function obterToken(tentativa = 1) {
   } catch (error) {
     const errorMsg = error.response?.data?.message || error.response?.data?.error_description || error.message;
     console.error(`❌ Erro ao obter token Efí (${error.code}):`, errorMsg);
+    console.error(`Status: ${error.response?.status || 'N/A'}, URL: ${baseURL}/oauth/token`);
+    console.error(`Client ID começa com: ${clientId?.substring(0, 20)}...`);
     
     // Retry uma vez
     if (tentativa < 2) {
       console.log("🔄 Tentando novamente...");
+      await new Promise(resolve => setTimeout(resolve, 1000)); // esperar 1s antes de retry
       return await obterToken(tentativa + 1);
     }
     
