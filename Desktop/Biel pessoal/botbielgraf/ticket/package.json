@@ -2,12 +2,15 @@
     "dependencies": {
         "axios": "^1.6.8",
         "better-sqlite3": "^11.0.0",
+        "brcode": "^0.0.4",
         "debug": "^4.3.4",
         "discord-html-transcripts": "^3.2.0",
         "discord.js": "^14.14.1",
         "dotenv": "^16.3.1",
         "form-data": "^4.0.0",
         "node-fetch": "^3.3.2",
+        "pg": "^8.11.3",
+        "qrcode": "^1.5.3",
         "quick.db": "^9.1.7",
         "wio.db": "^4.0.22"
     },
