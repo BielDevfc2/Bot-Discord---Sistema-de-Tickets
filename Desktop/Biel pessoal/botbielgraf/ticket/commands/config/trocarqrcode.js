@@ -2,8 +2,8 @@ const fs = require("fs");
 const { JsonDatabase } = require("wio.db");
 const config = new JsonDatabase({databasePath:"./db/config.json"});
 const axios = require("axios");
+const https = require("https");
 const { ApplicationCommandType, ApplicationCommandOptionType } = require("discord.js");
-
 
 module.exports = {
     name: "trocarqrcode",
@@ -18,51 +18,90 @@ module.exports = {
         }
     ],
     run: async (client, interaction) => {
-        if(interaction.user.id !== token.owner) return interaction.reply({content:`❌ | Você não tem permissão para executar este comando!`, ephemeral:true});
-        
-        const attachment = interaction.options.getAttachment("imagem");
-        
-        if (!attachment) 
-            return interaction.reply({ content: "Não encontrei nenhum arquivo.", ephemeral: true });
-
-        if (!attachment.contentType.startsWith('image/')) 
-            return interaction.reply({ content: "Coloque apenas imagem.", ephemeral: true });
-
-        const fileName = attachment.name;
-        if (fileName.endsWith(".webp")) 
-            return interaction.reply({ content: "Não é possivel usar arquivos .webp!", ephemeral: true });
-        
-        const archiveName = await config.get("archiveName");
-        const existingFilePath = `./${archiveName}`;
-        if (fs.existsSync(existingFilePath)) {
-            fs.unlink(existingFilePath, (err) => {
-                
-            });
-        }
-
-        const filePath = `./${fileName}`;
-        await config.set("archiveName", fileName);
-        const imageUrl = attachment.url;
-        await interaction.reply({content:`Aguarde um momento...`, ephemeral:true });
-        axios({
-            method: 'get',
-            url: imageUrl,
-            responseType: 'stream'
-        })
-        .then(response => {
-            const dest = fs.createWriteStream(filePath);
-            response.data.pipe(dest);
-            dest.on('finish', () => {
-                config.set("archiveName", fileName);
-                interaction.editReply({ content: `Imagem Trocada com sucesso!`, ephemeral: true, files: [filePath] });
-            });
-            dest.on('error', (err) => {
-                interaction.editReply({ content: "Ocorreu um erro ao salvar o arquivo, tente novamente.", ephemeral: true });
-            });
-        })
-        .catch(err => {
+        try {
+            if(interaction.user.id !== process.env.OWNER_ID) {
+                return interaction.reply({
+                    content:`❌ | Você não tem permissão para executar este comando!`, 
+                    ephemeral:true
+                });
+            }
             
-            interaction.editReply({ content: "Ocorreu um erro ao baixar a imagem, tente novamente.", ephemeral: true });
-        });
+            const attachment = interaction.options.getAttachment("imagem");
+            
+            if (!attachment) {
+                return interaction.reply({ 
+                    content: "❌ | Não encontrei nenhum arquivo.", 
+                    ephemeral: true 
+                });
+            }
+
+            if (!attachment.contentType.startsWith('image/')) {
+                return interaction.reply({ 
+                    content: "❌ | Coloque apenas imagem.", 
+                    ephemeral: true 
+                });
+            }
+
+            const fileName = attachment.name;
+            if (fileName.endsWith(".webp")) {
+                return interaction.reply({ 
+                    content: "❌ | Não é possível usar arquivos .webp!", 
+                    ephemeral: true 
+                });
+            }
+            
+            await interaction.reply({
+                content:`⏳ | Aguarde um momento...`, 
+                ephemeral: true 
+            });
+
+            const archiveName = await config.get("archiveName");
+            const existingFilePath = `./${archiveName}`;
+            
+            // Deletar arquivo antigo se existir
+            if (fs.existsSync(existingFilePath)) {
+                fs.unlinkSync(existingFilePath);
+            }
+
+            const filePath = `./${fileName}`;
+            const imageUrl = attachment.url;
+
+            // Download da imagem
+            const file = fs.createWriteStream(filePath);
+            
+            https.get(imageUrl, (response) => {
+                response.pipe(file);
+                
+                file.on('finish', () => {
+                    file.close();
+                    config.set("archiveName", fileName);
+                    interaction.editReply({ 
+                        content: `✅ | Imagem do QrCode trocada com sucesso!`, 
+                        ephemeral: true 
+                    });
+                });
+                
+                file.on('error', (err) => {
+                    fs.unlink(filePath, () => {});
+                    interaction.editReply({ 
+                        content: `❌ | Ocorreu um erro ao salvar o arquivo.`, 
+                        ephemeral: true 
+                    });
+                });
+            }).on('error', (err) => {
+                fs.unlink(filePath, () => {});
+                interaction.editReply({ 
+                    content: `❌ | Erro ao baixar a imagem.`, 
+                    ephemeral: true 
+                });
+            });
+
+        } catch (error) {
+            console.error("Erro em trocarqrcode:", error);
+            await interaction.reply({
+                content: `❌ | Erro: ${error.message}`,
+                ephemeral: true
+            }).catch(() => {});
+        }
     }
 };
