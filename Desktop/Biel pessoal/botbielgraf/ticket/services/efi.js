@@ -1,4 +1,5 @@
 const axios = require("axios");
+const https = require("https");
 
 const clientId = process.env.EFI_CLIENT_ID;
 const clientSecret = process.env.EFI_CLIENT_SECRET;
@@ -7,6 +8,12 @@ const sandbox = process.env.EFI_SANDBOX === "true";
 const baseURL = sandbox
   ? "https://pix-h.api.efipay.com.br"
   : "https://pix.api.efipay.com.br";
+
+// Agent customizado para ignorar erros de SSL
+const httpsAgent = new https.Agent({
+  rejectUnauthorized: false,
+  keepAlive: true
+});
 
 let cachedToken = null;
 let tokenExpiry = null;
@@ -41,9 +48,7 @@ async function obterToken(tentativa = 1) {
           "Content-Type": "application/json"
         },
         timeout: 30000,
-        rejectUnauthorized: false,
-        httpAgent: require("http").globalAgent,
-        httpsAgent: require("https").globalAgent
+        httpsAgent: httpsAgent
       }
     );
 
@@ -101,9 +106,7 @@ async function gerarPix(valor, descricao) {
           "Content-Type": "application/json"
         },
         timeout: 30000,
-        rejectUnauthorized: false,
-        httpAgent: require("http").globalAgent,
-        httpsAgent: require("https").globalAgent
+        httpsAgent: httpsAgent
       }
     );
 
