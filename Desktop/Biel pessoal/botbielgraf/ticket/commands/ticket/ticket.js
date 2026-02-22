@@ -1,5 +1,4 @@
 const { ApplicationCommandType, EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder, ButtonBuilder } = require("discord.js");
-const config = require("../../token.json");
 const {JsonDatabase} = require("wio.db");
 const cf = new JsonDatabase({databasePath:"./db/config.json"});
 const ct = new JsonDatabase({databasePath:"./db/category.json"});
