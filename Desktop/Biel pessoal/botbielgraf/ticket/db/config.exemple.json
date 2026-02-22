@@ -1,0 +1,73 @@
+{
+  "botconfig": {
+    "systemavaliation": true,
+    "pix": "Não Configurado.",
+    "category": null,
+    "cor": "#00FFFF",
+    "systemsendmsg": true,
+    "topic": false
+  },
+  "painel": {
+    "title": "🎫 Sistema de Tickets",
+    "footer": "Sistema de Tickets",
+    "desc": "Olá ${interaction.guild.name}, bem-vindo ao nosso sistema de tickets!",
+    "banner": "https://example.com/banner.png",
+    "placeholder": "Escolha uma categoria"
+  },
+  "dentro": {
+    "title": "Ticket Aberto",
+    "desc": "Olá #{user}, seu ticket foi aberto!\\nID: #{userid}\\nData: #{data}\\nAssumido por: #{assumido}\\nMotivo: #{motivo}",
+    "footer": "Sistema de Tickets",
+    "cor": "#00FF00",
+    "banner": "https://example.com/banner.png"
+  },
+  "open": {
+    "system": "Button",
+    "button": {
+      "label": "Abrir Ticket",
+      "style": 3,
+      "emoji": "🎫"
+    }
+  },
+  "button": {
+    "sair": {
+      "ativado": true,
+      "label": "Sair",
+      "style": 4,
+      "emoji": "🚪"
+    },
+    "membro": {
+      "ativado": true,
+      "label": "Painel Membro",
+      "style": 1,
+      "emoji": "👤"
+    },
+    "staff": {
+      "ativado": true,
+      "label": "Painel Staff",
+      "style": 3,
+      "emoji": "👨‍💼"
+    },
+    "fechar": {
+      "ativado": true,
+      "label": "Fechar Ticket",
+      "style": 4,
+      "emoji": "🔒"
+    }
+  },
+  "cargo_staff": null,
+  "channel_logs": null,
+  "channel_ava": null,
+  "transcript": {
+    "sistema": true,
+    "Usuário": true
+  },
+  "mensagem": {
+    "logs_admin": "Usuário: #{user}\\nID: #{userid}\\nData: #{data}\\nStaff: #{staff}\\nTicket: #{ticket}\\nAssumido: #{assumido}",
+    "logs_member": "Seu ticket foi fechado!\\nStaff: #{staff}\\nData: #{data}",
+    "member": "O Staff #{staff} está entrando em contato!\\nTicket: #{ticket}",
+    "assumed": "Seu ticket foi assumido por #{staff}!\\nTicket: #{ticket}",
+    "ticket_assumed": "Ticket assumido por #{staff}\\nData: #{data}",
+    "staff": "O membro #{user} está tentando comunicação via ticket!\\nTicket: #{ticket}"
+  }
+}

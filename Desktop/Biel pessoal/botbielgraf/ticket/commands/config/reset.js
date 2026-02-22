@@ -1,0 +1,38 @@
+const { ApplicationCommandType, EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder, ModalBuilder, TextInputBuilder } = require("discord.js");
+const {JsonDatabase} = require("wio.db");
+const config = new JsonDatabase({databasePath:"./db/config.json"});
+const token = require("../../token.json");
+
+
+module.exports = {
+    name:"reset",
+    description:"[👑 / Only Owner] RESETE O BOT",
+    type: ApplicationCommandType.ChatInput,
+    run: async(client, interaction) => {
+        if(interaction.user.id !== token.owner) return interaction.reply({content:`❌ | Você não tem permissão para executar este comando!`, ephemeral:true});
+        const modal = new ModalBuilder()
+        .setCustomId("resetmodal")
+        .setTitle("💢 - Resetar Todo o BOT");
+
+        const text = new TextInputBuilder()
+        .setCustomId("text")
+        .setLabel("você tem certeza?")
+        .setStyle(1)
+        .setMaxLength(3)
+        .setMinLength(3)
+        .setPlaceholder('SIM');
+
+        const text1 = new TextInputBuilder()
+        .setCustomId("text1")
+        .setLabel('Digite: CONFIRMO')
+        .setStyle(1)
+        .setMaxLength(8)
+        .setMinLength(8)
+        .setPlaceholder("CONFIRMO")
+        .setRequired(true);
+
+        modal.addComponents(new ActionRowBuilder().addComponents(text));
+        modal.addComponents(new ActionRowBuilder().addComponents(text1));
+
+        return interaction.showModal(modal);
+}}
