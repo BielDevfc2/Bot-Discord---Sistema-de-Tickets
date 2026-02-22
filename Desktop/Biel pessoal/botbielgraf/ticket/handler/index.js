@@ -1,25 +1,36 @@
-const fs = require("fs")
+const fs = require("fs");
 
 module.exports = async (client) => {
 
-  const SlashsArray = []
+  const SlashsArray = [];
 
-  fs.readdir(`./commands`, (error, folder) => {
-    folder.forEach(subfolder => {
-      fs.readdir(`./commands/${subfolder}/`, (error, files) => {
-        files.forEach(files => {
+  const folders = fs.readdirSync("./commands");
 
-          if (!files?.endsWith('.js')) return;
-          files = require(`../commands/${subfolder}/${files}`);
-          if (!files?.name) return;
-          client.slashCommands.set(files?.name, files);
+  for (const subfolder of folders) {
 
-          SlashsArray.push(files)
-        });
-      });
-    });
-  });
-  client.on("ready", async () => {
-    client.guilds.cache.forEach(guild => guild.commands.set(SlashsArray))
+    const files = fs.readdirSync(`./commands/${subfolder}`);
+
+    for (const file of files) {
+
+      if (!file.endsWith(".js")) continue;
+
+      const command = require(`../commands/${subfolder}/${file}`);
+
+      if (!command?.name) continue;
+
+      client.slashCommands.set(command.name, command);
+      SlashsArray.push(command);
+    }
+  }
+
+  client.once("ready", async () => {
+
+    console.log("🔄 Atualizando comandos...");
+
+    for (const guild of client.guilds.cache.values()) {
+      await guild.commands.set(SlashsArray);
+    }
+
+    console.log("✅ Comandos atualizados com sucesso!");
   });
 };

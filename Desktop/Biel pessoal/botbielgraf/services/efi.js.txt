@@ -1,0 +1,54 @@
+const axios = require("axios");
+
+const clientId = process.env.EFI_CLIENT_ID;
+const clientSecret = process.env.EFI_CLIENT_SECRET;
+const sandbox = process.env.EFI_SANDBOX === "true";
+
+const baseURL = sandbox
+  ? "https://pix-h.api.efipay.com.br"
+  : "https://pix.api.efipay.com.br";
+
+async function gerarPix(valor, descricao) {
+  try {
+    const auth = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
+
+    // 🔐 Gerar token OAuth
+    const tokenResponse = await axios.post(
+      `${baseURL}/oauth/token`,
+      { grant_type: "client_credentials" },
+      {
+        headers: {
+          Authorization: `Basic ${auth}`,
+          "Content-Type": "application/json"
+        }
+      }
+    );
+
+    const accessToken = tokenResponse.data.access_token;
+
+    // 💳 Criar cobrança
+    const cobranca = await axios.post(
+      `${baseURL}/v2/cob`,
+      {
+        calendario: { expiracao: 3600 },
+        valor: { original: valor.toFixed(2) },
+        chave: process.env.EFI_PIX_KEY,
+        solicitacaoPagador: descricao
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json"
+        }
+      }
+    );
+
+    return cobranca.data;
+
+  } catch (error) {
+    console.log("Erro Efí:", error.response?.data || error);
+    return null;
+  }
+}
+
+module.exports = { gerarPix };
