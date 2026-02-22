@@ -1,11 +1,12 @@
 const {Client , GatewayIntentBits,Collection, Partials } = require("discord.js");
 const {JsonDatabase} = require("wio.db");
+require("dotenv").config();
 const config = new JsonDatabase({databasePath:"./db/config.json"});
 const axios = require("axios");
-require("dotenv").config();
 
 
 console.clear();
+console.log("🚀 Iniciando bot...");
 
 const client = new Client({
     intents: Object.keys(GatewayIntentBits),
@@ -16,7 +17,12 @@ module.exports = client;
 
 client.slashCommands = new Collection();
 
-const token = process.env.TOKEN || require("./token.json").token;
+const token = process.env.TOKEN;
+
+if (!token) {
+    console.error("❌ TOKEN não encontrado em .env!");
+    process.exit(1);
+}
 
 client.login(token);
 
