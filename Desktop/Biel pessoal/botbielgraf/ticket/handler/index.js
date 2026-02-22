@@ -4,6 +4,7 @@ const path = require("path");
 module.exports = async (client) => {
 
   const SlashsArray = [];
+  const loadedNames = new Set();
   
   const commandsPath = path.join(__dirname, "../commands");
   console.log("📂 Procurando comandos em:", commandsPath);
@@ -36,8 +37,15 @@ module.exports = async (client) => {
           continue;
         }
 
+        // Evitar duplicatas
+        if (loadedNames.has(command.name)) {
+          console.warn(`  ⚠️ ${file} duplicado (${command.name} já foi carregado)`);
+          continue;
+        }
+
         client.slashCommands.set(command.name, command);
         SlashsArray.push(command);
+        loadedNames.add(command.name);
         console.log(`  ✅ ${command.name} carregado`);
       } catch (error) {
         console.error(`  ❌ Erro ao carregar ${file}:`, error.message);
