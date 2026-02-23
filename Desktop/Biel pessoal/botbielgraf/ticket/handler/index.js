@@ -32,21 +32,24 @@ module.exports = async (client) => {
         const filePath = path.join(subfolderPath, file);
         const command = require(filePath);
 
-        if (!command?.name) {
-          console.warn(`  ⚠️ ${file} não tem 'name' definido`);
+        // Suporta tanto { name, execute } quanto { data, execute }
+        const commandName = command?.data?.name || command?.name;
+
+        if (!commandName) {
+          console.warn(`  ⚠️ ${file} não tem 'name' ou 'data.name' definido`);
           continue;
         }
 
         // Evitar duplicatas
-        if (loadedNames.has(command.name)) {
-          console.warn(`  ⚠️ ${file} duplicado (${command.name} já foi carregado)`);
+        if (loadedNames.has(commandName)) {
+          console.warn(`  ⚠️ ${file} duplicado (${commandName} já foi carregado)`);
           continue;
         }
 
-        client.slashCommands.set(command.name, command);
-        SlashsArray.push(command);
-        loadedNames.add(command.name);
-        console.log(`  ✅ ${command.name} carregado`);
+        client.slashCommands.set(commandName, command);
+        SlashsArray.push(command.data || command);
+        loadedNames.add(commandName);
+        console.log(`  ✅ ${commandName} carregado`);
       } catch (error) {
         console.error(`  ❌ Erro ao carregar ${file}:`, error.message);
       }
@@ -60,9 +63,19 @@ module.exports = async (client) => {
 
     console.log("🔄 Atualizando comandos...");
 
+    // Converter comandos antigos para novo formato se necessário
+    const commandsToRegister = SlashsArray.map(cmd => {
+      // Se é o novo formato (com data)
+      if (cmd.data) {
+        return cmd.data;
+      }
+      // Compatibilidade com formato antigo
+      return cmd;
+    });
+
     for (const guild of client.guilds.cache.values()) {
       try {
-        await guild.commands.set(SlashsArray);
+        await guild.commands.set(commandsToRegister);
         console.log(`✅ Comandos atualizados para ${guild.name}`);
       } catch (error) {
         console.error(`❌ Erro ao atualizar comandos em ${guild.name}:`, error.message);

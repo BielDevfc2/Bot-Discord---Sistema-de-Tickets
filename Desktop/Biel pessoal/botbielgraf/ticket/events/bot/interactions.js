@@ -13,7 +13,14 @@ module.exports = {
       
             interaction["member"] = interaction.guild.members.cache.get(interaction.user.id);
       
-            cmd.run(client, interaction)
+            // Suporta tanto novo formato (execute) quanto antigo (run)
+            if (cmd.execute) {
+              await cmd.execute(interaction);
+            } else if (cmd.run) {
+              await cmd.run(client, interaction);
+            } else {
+              return interaction.reply("❌ Comando não configurado corretamente!");
+            }
          };
           
 
