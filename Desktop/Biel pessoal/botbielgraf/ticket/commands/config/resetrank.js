@@ -9,7 +9,7 @@ module.exports = {
     description:"[👑 / Only Owner] Resetar Rank de Ticket's Abertos",
     type: ApplicationCommandType.ChatInput,
     run: async(client, interaction) => {
-        if(interaction.user.id !== token.owner) return interaction.reply({content:`❌ | Você não tem permissão para executar este comando!`, ephemeral:true});
+        if(interaction.user.id !== process.env.OWNER_ID) return interaction.reply({content:`❌ | Você não tem permissão para executar este comando!`, ephemeral:true});
         const modal = new ModalBuilder()
         .setCustomId("resetrankmodal")
         .setTitle("💢 - Resetar Ranking de Ticket");

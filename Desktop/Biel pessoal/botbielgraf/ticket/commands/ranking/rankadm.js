@@ -10,11 +10,14 @@ module.exports = {
     description:"[🛠 / Área Staff] Veja o Ranking de quem mais assumiu ticket!",
     type: ApplicationCommandType.ChatInput,
     run: async(client, interaction) => {
-        if (!interaction.member.roles.cache.has(await config.get("cargo_staff")) && interaction.user.id !== token.owner) return interaction.reply({content:`⛔ | Permissão Negada.`, ephemeral:true});
-        const all = await perfil.all().filter(a => a.data.assumidos).sort((a,b) => b.data.assumidos - a.data.assumidos).slice(0, 15);
+        if (!interaction.member.roles.cache.has(await config.get("cargo_staff")) && interaction.user.id !== process.env.OWNER_ID) return interaction.reply({content:`⛔ | Permissão Negada.`, ephemeral:true});
+        const all = (await perfil.all())
+            .filter(a => a.data && a.data.assumidos)
+            .sort((a,b) => b.data.assumidos - a.data.assumidos)
+            .slice(0, 15);
         if(all.length <= 0) return interaction.reply({content:`❌ | Nenhum ticket foi assumido.`, ephemeral:true});
         let msg = "";
-        await all.map((ae, index) => {
+        all.forEach((ae, index) => {
             let medalha = "";
             if((index+1) === 1) {
                 medalha = "🥇";
