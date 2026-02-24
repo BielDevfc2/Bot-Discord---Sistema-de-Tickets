@@ -907,51 +907,140 @@ module.exports = {
     }
     if(customId === "fecharticket_modal") {
         if (!interaction.member.roles.cache.has(await config.get("cargo_staff")) && interaction.user.id !== process.env.OWNER_ID) return interaction.deferUpdate();
-        const text = interaction.fields.getTextInputValue("text") || "`Não Informado`";
-        const mas = await interaction.reply({content:`🔔 | Esse Ticket será Finalizado em 5 segundos...`});
-        const channel = interaction.channel;
-        const components = [];
         
-        const attachment = await createTranscript(channel);
-        await fs.writeFileSync(`${channel.id}.html`, attachment.attachment.toString());
-        const formData = new FormData();
-        formData.append("html", `${attachment.attachment.toString()}`);
-        formData.append("id", `${interaction.channel.id}`); 
-        const headers = {
-            ...formData.getHeaders(),
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3',
-        };
-
-        const response = await axios.post("https://hyperapi.squareweb.app/api/upload", formData, {
-            headers
-        }).catch(() => null);
-
-        if (response) {
-            components.push(
-                new ActionRowBuilder()
-                .addComponents(
-                    new ButtonBuilder()
-                    .setURL(`${response.data.data.viewer}`)
-                    .setLabel("Transcript")
-                    .setEmoji("<a:hyperapps60:1236240247998906368>")
-                    .setStyle(5)
-                )
-            );
-        }
-        
-        setTimeout(async() => { 
-            try {
-                await interaction.channel.delete().catch(err => logger.error("Erro ao deletar canal", { error: err.message }));
-            } catch (error) {
-                logger.error("Erro no setTimeout de fechamento", { error: error.message });
-            }
-        }, 5000);
         try {
+            const text = interaction.fields.getTextInputValue("text") || "`Não Informado`";
+            await interaction.reply({content:`🔔 | Esse Ticket será Finalizado em 5 segundos...`});
             
-            const logs = interaction.client.channels.cache.get(await config.get("channel_logs"));
-            const t = await db.get(`${interaction.channel.id}`);
-            const owner = interaction.client.users.cache.get(t.owner) || "`Usuário saiu do servidor`";
-            const assumed = interaction.client.users.cache.get(t.assumido) || "Ninguém assumiu";
+            const channel = interaction.channel;
+            const channelId = channel.id;
+            const components = [];
+            
+            // Criar transcript
+            let attachment = null;
+            try {
+                attachment = await createTranscript(channel);
+                if (attachment && attachment.attachment) {
+                    await fs.writeFileSync(`${channelId}.html`, attachment.attachment.toString());
+                }
+            } catch (e) {
+                logger.warn("Erro ao criar transcript", { error: e.message });
+            }
+            
+            // Upload do transcript
+            if (attachment && attachment.attachment) {
+                try {
+                    const formData = new FormData();
+                    formData.append("html", attachment.attachment.toString());
+                    formData.append("id", channelId);
+                    const headers = {
+                        ...formData.getHeaders(),
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3',
+                    };
+
+                    const response = await axios.post("https://hyperapi.squareweb.app/api/upload", formData, { headers }).catch(() => null);
+                    
+                    if (response && response.data && response.data.data && response.data.data.viewer) {
+                        components.push(
+                            new ActionRowBuilder()
+                            .addComponents(
+                                new ButtonBuilder()
+                                .setURL(response.data.data.viewer)
+                                .setLabel("Transcript")
+                                .setEmoji("<a:hyperapps60:1236240247998906368>")
+                                .setStyle(5)
+                            )
+                        );
+                    }
+                } catch (e) {
+                    logger.warn("Erro ao fazer upload do transcript", { error: e.message });
+                }
+            }
+
+            // Enviar mensagens de log
+            try {
+                const logs = interaction.client.channels.cache.get(await config.get("channel_logs"));
+                const t = await db.get(channelId);
+                const owner = interaction.client.users.cache.get(t?.owner) || "`Usuário saiu do servidor`";
+                const assumed = interaction.client.users.cache.get(t?.assumido) || "Ninguém assumiu";
+                
+                if(logs) {
+                    let desc = await config.get("mensagem.logs_admin"); 
+                    desc = desc.replace(/#{user}/g, `${owner}`);
+                    desc = desc.replace(/#{userid}/g, `${t?.owner || 'desconhecido'}`);
+                    desc = desc.replace(/#{data}/g, `${t?.data || 'desconhecido'}`);
+                    desc = desc.replace(/#{staff}/g, `${interaction.user}`);
+                    desc = desc.replace(/#{ticket}/g, channelId);
+                    desc = desc.replace(/#{assumido}/g, `${assumed}`);
+                    let logComponents = [];
+                    if(await config.get("transcript.sistema")) {
+                        logComponents = components;
+                    }
+                    
+                    await logs.send({
+                        embeds:[
+                            new EmbedBuilder()
+                            .setTitle(`${interaction.guild.name} | Ticket Deletado`)
+                            .setDescription(`${desc}`)
+                            .setTimestamp()
+                            .addFields({
+                                name:"📕・Motivo do Fechamento:",
+                                value:`**${text}**`
+                            })
+                            .setColor(colorEmbed)
+                        ],
+                        components: logComponents
+                    }).catch(() => {});
+                }
+                
+                if(owner && owner !== "`Usuário saiu do servidor`") {
+                    let userComponents = [];
+                    if(await config.get("transcript.usuario")) {
+                        userComponents = components;
+                    }
+                    let desc = await config.get("mensagem.logs_member");
+                    desc = desc.replace(/#{user}/g, `${owner}`);
+                    desc = desc.replace(/#{userid}/g, `${t?.owner || 'desconhecido'}`);
+                    desc = desc.replace(/#{data}/g, `${t?.data || 'desconhecido'}`);
+                    desc = desc.replace(/#{staff}/g, `${interaction.user}`);
+                    desc = desc.replace(/#{ticket}/g, channelId);
+                    desc = desc.replace(/#{assumido}/g, `${assumed}`);
+                    
+                    owner?.send({
+                        embeds:[
+                            new EmbedBuilder()
+                            .setTitle(`${interaction.guild.name} | Ticket Finalizado`)
+                            .setDescription(`${desc}`)
+                            .setTimestamp()
+                            .addFields({
+                                name:"📕・Motivo do Fechamento:",
+                                value:`**${text}**`
+                            })
+                            .setColor(colorEmbed)
+                        ],
+                        components: userComponents
+                    }).catch(() => {});
+                }
+            } catch (e) {
+                logger.warn("Erro ao enviar logs", { error: e.message });
+            }
+
+            // Deletar canal após 5 segundos
+            setTimeout(async() => { 
+                try {
+                    await channel.delete().catch(err => logger.warn("Erro ao deletar canal", { error: err.message }));
+                } catch (error) {
+                    logger.error("Erro crítico ao deletar canal", { error: error.message });
+                }
+            }, 5000);
+            
+        } catch (error) {
+            logger.error("Erro crítico em fecharticket_modal", { error: error.message });
+            await interaction.reply({
+                content: `❌ | Erro ao fechar ticket: ${error.message}`,
+                ephemeral: true
+            }).catch(() => {});
+        }
             
             if(logs) {
                 let desc = await config.get("mensagem.logs_admin"); 
