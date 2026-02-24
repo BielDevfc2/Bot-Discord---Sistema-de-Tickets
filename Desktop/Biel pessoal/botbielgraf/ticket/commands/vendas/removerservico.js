@@ -75,7 +75,7 @@ module.exports = {
     async autocomplete(interaction) {
         try {
             const configDB = new JsonDatabase({ databasePath: path.join(__dirname, "../../db/config.json") });
-            const servicos = await configDB.get("servicos") || [];
+            const servicos = configDB.get("servicos") || [];
             
             const focused = interaction.options.getFocused();
             const names = servicos.map(s => s.value);
