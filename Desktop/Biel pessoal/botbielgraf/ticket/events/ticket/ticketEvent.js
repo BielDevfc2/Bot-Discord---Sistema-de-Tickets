@@ -1,10 +1,11 @@
 const { ApplicationCommandType, EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder, ButtonBuilder, ModalBuilder, TextInputBuilder, RoleSelectMenuBuilder, ChannelSelectMenuBuilder, ChannelType, PermissionOverwrites, PermissionsBitField, PermissionFlagsBits, UserSelectMenuBuilder } = require("discord.js");
 const {JsonDatabase} = require("wio.db");
-const config = new JsonDatabase({databasePath:"./db/config.json"});
-const perfil = new JsonDatabase({databasePath:"./db/perfil.json"});
-const ct = new JsonDatabase({databasePath:"./db/category.json"});
+const config = new JsonDatabase({databasePath: require("path").join(__dirname, "../../db/config.json")});
+const perfil = new JsonDatabase({databasePath: require("path").join(__dirname, "../../db/perfil.json")});
+const ct = new JsonDatabase({databasePath: require("path").join(__dirname, "../../db/category.json")});
 
 const { QuickDB } = require("quick.db");
+const path = require("path");
 const db = new QuickDB({table:"ticket"});
 const {createTranscript} = require("discord-html-transcripts");
 const axios = require("axios"); 
@@ -43,7 +44,7 @@ module.exports = {
         const motivo = interaction.fields.getTextInputValue("text") || "Nenhum Motivo informado.";
 
         // Anti-abuse checks (max open tickets and cooldown)
-        const antiPath = "./db/antiabuso.json";
+        const antiPath = path.join(__dirname, "../../db/antiabuso.json");
         const antiData = readJson(antiPath) || {};
         if (!antiData[interaction.guild.id]) antiData[interaction.guild.id] = { users: {}, settings: { maxOpen: 2, cooldownMs: 5 * 60 * 1000 } };
         const guildAnti = antiData[interaction.guild.id];
@@ -92,7 +93,7 @@ module.exports = {
                 const embed = new EmbedBuilder().setTitle(`${aes.title}`).setColor(aes.cor);
                 // Prioridade por cargo
                 try {
-                    const priPath = "./db/prioridade.json";
+                    const priPath = path.join(__dirname, "../../db/prioridade.json");
                     const priData = readJson(priPath) || {};
                     const guildPri = priData[interaction.guild.id] || { roles: {} };
                     // find member roles that match
@@ -939,7 +940,11 @@ module.exports = {
         }
         
         setTimeout(async() => { 
-            return interaction.channel.delete();
+            try {
+                await interaction.channel.delete().catch(err => logger.error("Erro ao deletar canal", { error: err.message }));
+            } catch (error) {
+                logger.error("Erro no setTimeout de fechamento", { error: error.message });
+            }
         }, 5000);
         try {
             
