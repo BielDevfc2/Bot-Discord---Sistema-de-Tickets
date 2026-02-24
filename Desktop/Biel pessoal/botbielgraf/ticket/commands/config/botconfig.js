@@ -1,14 +1,16 @@
-const { ApplicationCommandType, EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder } = require("discord.js");
+const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder } = require("discord.js");
 const {JsonDatabase} = require("wio.db");
 const config = new JsonDatabase({databasePath:"./db/config.json"});
-
-
+const logger = require("../../util/logger");
 
 module.exports = {
-    name:"botconfig",
-    description:"[👑 / Only Owner] Configure o Sistema de Ticket do BOT",
-    type: ApplicationCommandType.ChatInput,
-    run: async(client, interaction) => {
+    data: new SlashCommandBuilder()
+        .setName('botconfig')
+        .setDescription('👑 [Apenas Dono] Configure o Sistema de Ticket do BOT')
+        .setDMPermission(false)
+        .setDefaultMemberPermissions(0), // Apenas Dono via verificação manual
+    
+    async execute(interaction) {
         if(interaction.user.id !== process.env.OWNER_ID) return interaction.reply({content:`❌ | Você não tem permissão para executar este comando!`, ephemeral:true});
         interaction.reply({
             embeds:[
@@ -69,4 +71,4 @@ module.exports = {
             ]
         });
     }
-}
+};

@@ -1,24 +1,23 @@
-const { ApplicationCommandType, ApplicationCommandOptionType, PermissionFlagsBits } = require("discord.js");
+const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
+
 module.exports = {
-    name:"say",
-    description:"[🧀 | Moderação] Faça eu falar!",
-    type: ApplicationCommandType.ChatInput,
-    default_member_permissions: PermissionFlagsBits.ManageGuild,
-    options:[
-        {
-            name:"mensagem",
-            description:"Qual mensagem irei enviar?",
-            type: ApplicationCommandOptionType.String,
-            required:true,
-        }
-    ],
-    run:async(client, interaction) => {
-        
+    data: new SlashCommandBuilder()
+        .setName('say')
+        .setDescription('🧀 [Moderação] Faça o bot falar!')
+        .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
+        .addStringOption(option =>
+            option
+                .setName('mensagem')
+                .setDescription('Qual mensagem irei enviar?')
+                .setRequired(true)
+        ),
+    
+    async execute(interaction) {
+		
 		await interaction.reply({content:`Aguarde um momento...`, ephemeral:true});
 		await interaction.channel.send({
 			content:`${interaction.options.getString("mensagem")}`
 		});
 		interaction.editReply({content:`Enviado com sucesso!`});
-		
     }
-}
+};

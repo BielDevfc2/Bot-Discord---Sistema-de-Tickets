@@ -1,0 +1,43 @@
+{
+  "$schema": "https://railway.app/json-schema",
+  "build": {
+    "builder": "nixpacks",
+    "buildCommand": "npm install"
+  },
+  "deploy": {
+    "numReplicas": 1,
+    "restartPolicyType": "always",
+    "restartPolicyMaxRetries": 10
+  },
+  "env": {
+    "TOKEN": {
+      "description": "Discord Bot Token",
+      "required": true
+    },
+    "OWNER_ID": {
+      "description": "ID do dono do bot",
+      "required": true
+    },
+    "EFI_CLIENT_ID": {
+      "description": "Client ID da Efí/Gerencianet (opcional)",
+      "required": false
+    },
+    "EFI_CLIENT_SECRET": {
+      "description": "Client Secret da Efí/Gerencianet (opcional)",
+      "required": false
+    },
+    "EFI_SANDBOX": {
+      "description": "true para sandbox, false para produção",
+      "required": false,
+      "default": "true"
+    },
+    "EFI_PIX_KEY": {
+      "description": "Chave PIX (email, CPF ou CNPJ)",
+      "required": false
+    },
+    "DATABASE_URL": {
+      "description": "URL do banco PostgreSQL (opcional)",
+      "required": false
+    }
+  }
+}

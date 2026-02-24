@@ -10,6 +10,7 @@ const {createTranscript} = require("discord-html-transcripts");
 const axios = require("axios"); 
 const FormData = require("form-data");
 const fs = require("fs");
+const { readJson, writeJson } = require("../../util/jsonDb");
 const { formatBrazilianDateTime, replaceText } = require("../../util/ticketUtils");
 
 
@@ -41,8 +42,27 @@ module.exports = {
     if(customId === "abrir_ticket_modal") {
         const motivo = interaction.fields.getTextInputValue("text") || "Nenhum Motivo informado.";
 
+        // Anti-abuse checks (max open tickets and cooldown)
+        const antiPath = "./db/antiabuso.json";
+        const antiData = readJson(antiPath) || {};
+        if (!antiData[interaction.guild.id]) antiData[interaction.guild.id] = { users: {}, settings: { maxOpen: 2, cooldownMs: 5 * 60 * 1000 } };
+        const guildAnti = antiData[interaction.guild.id];
+
+        // count open tickets by searching channels with user id in name
+        const openCount = interaction.guild.channels.cache.filter(c => c.name && c.name.includes(`・${interaction.user.id}`)).size;
+        const userAnti = guildAnti.users[interaction.user.id] || { lastOpened: 0, lastTicket: null };
+
+        const now = Date.now();
+        if (openCount >= (guildAnti.settings.maxOpen || 2)) {
+            return interaction.reply({ content: `❌ | Você já possui ${openCount} tickets abertos. Limite: ${guildAnti.settings.maxOpen}`, ephemeral: true });
+        }
+        if (now - (userAnti.lastOpened || 0) < (guildAnti.settings.cooldownMs || 5 * 60 * 1000)) {
+            const wait = Math.ceil(((userAnti.lastOpened || 0) + (guildAnti.settings.cooldownMs || 5 * 60 * 1000) - now) / 1000);
+            return interaction.reply({ content: `⏳ | Aguarde ${wait} segundos antes de abrir outro ticket.`, ephemeral: true });
+        }
+
         await interaction.reply({content:`🔁 | Aguarde um momento estou Criando seu ticket...`, ephemeral:true});
-        
+
         if(botconfigk.topic) {
             const asd = interaction.channel.threads.cache.find(x => x.name === `🎫・${interaction.user.username}・${interaction.user.id}`);
             if(asd) {
@@ -70,6 +90,38 @@ module.exports = {
             }).then(async(channel) => {
                 const aes = await config.get("dentro");
                 const embed = new EmbedBuilder().setTitle(`${aes.title}`).setColor(aes.cor);
+                // Prioridade por cargo
+                try {
+                    const priPath = "./db/prioridade.json";
+                    const priData = readJson(priPath) || {};
+                    const guildPri = priData[interaction.guild.id] || { roles: {} };
+                    // find member roles that match
+                    const memberRoles = interaction.member.roles.cache.map(r => r.id);
+                    const priorityOrder = { 'Alta': 3, 'Média': 2, 'Baixa': 1 };
+                    let chosen = null;
+                    for (const roleId of memberRoles) {
+                        if (guildPri.roles && guildPri.roles[roleId]) {
+                            const info = guildPri.roles[roleId];
+                            if (!chosen || (priorityOrder[info.prioridade] || 0) > (priorityOrder[chosen.prioridade] || 0)) {
+                                chosen = info;
+                                chosen._roleId = roleId;
+                            }
+                        }
+                    }
+                    if (chosen) {
+                        // include priority in title
+                        const prioLabel = chosen.prioridade || "Normal";
+                        embed.setTitle(`[${prioLabel}] ${aes.title}`);
+                        if (chosen.cor) embed.setColor(chosen.cor);
+                        // mention staff role in first message later
+                    } else {
+                        // default
+                        embed.setTitle(`[Normal] ${aes.title}`);
+                        embed.setColor(aes.cor || '#5865F2');
+                    }
+                } catch (e) {
+                    console.error('Erro ao aplicar prioridade:', e);
+                }
                 let title = aes.title;
                 title = title.replace("${interaction.guild.name}", interaction.guild.name); 
                 embed.setTitle(`${title}`)
@@ -173,6 +225,42 @@ module.exports = {
                         msg: msg.id,
                         motivo
                     });
+                    // update anti-abuse last opened
+                    userAnti.lastOpened = Date.now();
+                    userAnti.lastTicket = channel.id;
+                    guildAnti.users[interaction.user.id] = userAnti;
+                    antiData[interaction.guild.id] = guildAnti;
+                    writeJson(antiPath, antiData);
+                    // reputacao: +5 por abrir ticket
+                    try {
+                        const repPath = './db/reputacao.json';
+                        const rep = readJson(repPath) || {};
+                        if (!rep[interaction.guild.id]) rep[interaction.guild.id] = {};
+                        if (!rep[interaction.guild.id][interaction.user.id]) rep[interaction.guild.id][interaction.user.id] = { pontos: 0, nivel: 0 };
+                        rep[interaction.guild.id][interaction.user.id].pontos += 5;
+                        rep[interaction.guild.id][interaction.user.id].nivel = Math.floor(rep[interaction.guild.id][interaction.user.id].pontos / 100);
+                        writeJson(repPath, rep);
+                    } catch (e) { console.error('rep add error', e); }
+                    // auto-delete empty ticket after 10 minutes if nobody else replied
+                    setTimeout(async () => {
+                        try {
+                            const fetched = await channel.messages.fetch({ limit: 10 });
+                            // if only the bot message and maybe owner initial, consider empty
+                            if (fetched.size <= 1) {
+                                await channel.delete().catch(() => {});
+                                // update antiabuso to remove lastTicket
+                                const anti = readJson(antiPath) || {};
+                                if (anti[interaction.guild.id] && anti[interaction.guild.id].users && anti[interaction.guild.id].users[interaction.user.id]) {
+                                    if (anti[interaction.guild.id].users[interaction.user.id].lastTicket === channel.id) {
+                                        anti[interaction.guild.id].users[interaction.user.id].lastTicket = null;
+                                    }
+                                    writeJson(antiPath, anti);
+                                }
+                            }
+                        } catch (err) {
+                            // ignore
+                        }
+                    }, 10 * 60 * 1000);
                 });
                 perfil.add(`${interaction.user.id}.ticketsaberto`, 1);
                 const logs = interaction.guild.channels.cache.get(await config.get("channel_logs"));
@@ -1045,6 +1133,32 @@ module.exports = {
                     )
                 ]
             });
+        }
+
+        // Salvar avaliação e atualizar estatísticas e reputação
+        try {
+            const avalPath = './db/avaliacoes.json';
+            const avalData = readJson(avalPath) || {};
+            const guildId = interaction.guild.id;
+            if (!avalData[guildId]) avalData[guildId] = {};
+            const staffId = (assumed && assumed.id) ? assumed.id : null;
+            if (staffId) {
+                if (!avalData[guildId][staffId]) avalData[guildId][staffId] = { total: 0, soma: 0, media: 0 };
+                avalData[guildId][staffId].total += 1;
+                avalData[guildId][staffId].soma += parseInt(k, 10);
+                avalData[guildId][staffId].media = +(avalData[guildId][staffId].soma / avalData[guildId][staffId].total).toFixed(2);
+                writeJson(avalPath, avalData);
+            }
+            // reputacao: +3 para o usuário que avaliou
+            const repPath = './db/reputacao.json';
+            const rep = readJson(repPath) || {};
+            if (!rep[guildId]) rep[guildId] = {};
+            if (!rep[guildId][interaction.user.id]) rep[guildId][interaction.user.id] = { pontos: 0, nivel: 0 };
+            rep[guildId][interaction.user.id].pontos += 3;
+            rep[guildId][interaction.user.id].nivel = Math.floor(rep[guildId][interaction.user.id].pontos / 100);
+            writeJson(repPath, rep);
+        } catch (e) {
+            console.error('Erro ao salvar avaliacao/reputacao:', e);
         }
 
     }

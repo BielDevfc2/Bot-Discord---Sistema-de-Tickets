@@ -1,10 +1,12 @@
-const { ApplicationCommandType, EmbedBuilder } = require("discord.js");
+const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
+const logger = require("../../util/logger");
 
 module.exports = {
-    name: "nuke",
-    description: "[👑 / Only Owner] Nuke - Deleta todas as mensagens do canal",
-    type: ApplicationCommandType.ChatInput,
-    run: async (client, interaction) => {
+    data: new SlashCommandBuilder()
+        .setName('nuke')
+        .setDescription('💣 [Apenas Dono] Delete todas as mensagens do canal'),
+    
+    async execute(interaction) {
         // Verifica se é o owner
         if (interaction.user.id !== process.env.OWNER_ID) {
             return interaction.reply({

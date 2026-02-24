@@ -1,14 +1,14 @@
-const { ApplicationCommandType, EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder, ModalBuilder, TextInputBuilder } = require("discord.js");
+const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder, ModalBuilder, TextInputBuilder } = require("discord.js");
 const {JsonDatabase} = require("wio.db");
 const config = new JsonDatabase({databasePath:"./db/config.json"});
-
-
+const logger = require("../../util/logger");
 
 module.exports = { 
-    name:"resetrank",
-    description:"[👑 / Only Owner] Resetar Rank de Ticket's Abertos",
-    type: ApplicationCommandType.ChatInput,
-    run: async(client, interaction) => {
+    data: new SlashCommandBuilder()
+        .setName('resetrank')
+        .setDescription('👑 [Apenas Dono] Resetar Rank de Tickets Abertos'),
+    
+    async execute(interaction) {
         if(interaction.user.id !== process.env.OWNER_ID) return interaction.reply({content:`❌ | Você não tem permissão para executar este comando!`, ephemeral:true});
         const modal = new ModalBuilder()
         .setCustomId("resetrankmodal")
@@ -26,4 +26,5 @@ module.exports = {
         modal.addComponents(new ActionRowBuilder().addComponents(text));
 
         return interaction.showModal(modal);
-}}
+    }
+};

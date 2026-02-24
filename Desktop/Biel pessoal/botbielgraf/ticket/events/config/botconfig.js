@@ -5,6 +5,30 @@ const perfil = new JsonDatabase({ databasePath: "./db/perfil.json" });
 const ct = new JsonDatabase({ databasePath: "./db/category.json" });
 const https = require("https");
 
+// Função para consolidar o objeto painel com todos os campos obrigatórios
+async function consolidarPainel() {
+  try {
+    const painelAtual = await config.get("painel") || {};
+    
+    // Garantir que todos os campos obrigatórios existem
+    const painelConsolidado = {
+      title: painelAtual.title || "🎲・Central de atendimento",
+      footer: painelAtual.footer || "Horário de atendimento: 10:00 até 23:00",
+      desc: painelAtual.desc || "**・Olá, seja bem-vindo(a) a central de atendimento da ${interaction.guild.name}, abaixo vamos listar os tipos de departamentos e suporte presentes na nossa empresa escolha um para abrir seu chamando.\n\n📂・Atendimento via ticket\n\n・Selecione abaixo qual departamento está relacionado a sua dúvida ou problema e será gerado um canal de texto privado para que seu atendimento seja realizado de forma segura e ágil.**",
+      banner: painelAtual.banner || "https://media.discordapp.net/attachments/1234696813165023303/1237228543021158501/nulledticket_1707888290521.png?ex=663ae25f&is=663990df&hm=bf8ebfef87325092861314fcb99d1c4194a8598048c3ea84d303f7e53d7e076f&=&format=webp&quality=lossless&width=550&height=143",
+      cor: painelAtual.cor || "Random",
+      placeholder: painelAtual.placeholder || "Escolha uma opção:"
+    };
+    
+    // Salvar o painel consolidado
+    await config.set("painel", painelConsolidado);
+    return painelConsolidado;
+  } catch (error) {
+    console.error("Erro ao consolidar painel:", error);
+    return null;
+  }
+}
+
 module.exports = {
     name: "interactionCreate",
     run: async (interaction, client) => {
@@ -845,7 +869,10 @@ module.exports = {
         }
         if (customId.endsWith("_titulomodalpainel")) {
             const text = interaction.fields.getTextInputValue("text");
-            await config.set(`painel.title`, text);
+            // Obter painel atual e atualizar apenas o título
+            const painelAtual = await config.get("painel") || {};
+            painelAtual.title = text;
+            await config.set("painel", painelAtual);
             painel();
         } //
 
@@ -879,10 +906,12 @@ module.exports = {
                 await mensagem.delete();
                 collectorMensagem.stop();
                 const emojis = mensagem.content;
-                const titleold = await config.get(`painel.desc`);
+                const painelAtual = await config.get("painel") || {};
+                const titleold = painelAtual.desc;
 
                 try {
-                    await config.set(`painel.desc`, emojis);
+                    painelAtual.desc = emojis;
+                    await config.set("painel", painelAtual);
                     await paineledit()
                 } catch {
                     interaction.channel.send({
@@ -892,7 +921,8 @@ module.exports = {
                             msg.delete()
                         }, 2700);
                     })
-                    await config.set(`painel.desc`, titleold);
+                    painelAtual.desc = titleold;
+                    await config.set("painel", painelAtual);
                     await paineledit();
                 }
             });
@@ -931,7 +961,9 @@ module.exports = {
         }
         if (customId.endsWith("_footerpainelmodal")) {
             const text = interaction.fields.getTextInputValue("text");
-            await config.set(`painel.footer`, text);
+            const painelAtual = await config.get("painel") || {};
+            painelAtual.footer = text;
+            await config.set("painel", painelAtual);
             painel();
         } //
 
@@ -955,8 +987,10 @@ module.exports = {
         }
         if (customId.endsWith("_bannerpainelmodal")) {
             const text = interaction.fields.getTextInputValue("text");
+            const painelAtual = await config.get("painel") || {};
             if (text === "remover") {
-                await config.set("painel.banner", text);
+                painelAtual.banner = text;
+                await config.set("painel", painelAtual);
                 painel();
                 return;
             }
@@ -970,7 +1004,8 @@ module.exports = {
                     ],
                     ephemeral: true
                 }).then(async () => {
-                    await config.set(`painel.banner`, text);
+                    painelAtual.banner = text;
+                    await config.set("painel", painelAtual);
                     paineledit();
                 }).catch(() => {
                     interaction.reply({ content: `❌ | Coloque uma Imagem Valida`, ephemeral: true });
@@ -1000,6 +1035,7 @@ module.exports = {
         }
         if (customId.endsWith("_corpainelmodal")) {
             const text = interaction.fields.getTextInputValue("text");
+            const painelAtual = await config.get("painel") || {};
             try {
                 interaction.reply({
                     embeds: [
@@ -1009,7 +1045,8 @@ module.exports = {
                     ],
                     ephemeral: true
                 }).then(async () => {
-                    await config.set(`painel.cor`, text);
+                    painelAtual.cor = text;
+                    await config.set("painel", painelAtual);
                     paineledit();
                 }).catch(() => {
                     interaction.reply({ content: `❌ | Coloque uma Cor Valida`, ephemeral: true });
@@ -1040,7 +1077,9 @@ module.exports = {
         }
         if (customId.endsWith("_placeholderpainelmodal")) {
             const text = interaction.fields.getTextInputValue("text");
-            await config.set(`painel.placeholder`, text);
+            const painelAtual = await config.get("painel") || {};
+            painelAtual.placeholder = text;
+            await config.set("painel", painelAtual);
             painel();
         } //
 
@@ -1096,7 +1135,9 @@ module.exports = {
         }
         if (customId.endsWith("_titleembedmodal")) {
             const text = interaction.fields.getTextInputValue("text");
-            await config.set("dentro.title", text);
+            const dentroAtual = await config.get("dentro") || {};
+            dentroAtual.title = text;
+            await config.set("dentro", dentroAtual);
             embedticket();
         }
         if (customId.endsWith("_descembed")) {
@@ -1125,7 +1166,9 @@ module.exports = {
         }
         if (customId.endsWith("_footerembedmodal")) {
             const text = interaction.fields.getTextInputValue("text");
-            await config.set("dentro.footer", text);
+            const dentroAtual = await config.get("dentro") || {};
+            dentroAtual.footer = text;
+            await config.set("dentro", dentroAtual);
             embedticket();
         }
         if (customId.endsWith("_corembed")) {
@@ -1147,6 +1190,7 @@ module.exports = {
         }
         if (customId.endsWith("_corembedmodal")) {
             const text = interaction.fields.getTextInputValue("text");
+            const dentroAtual = await config.get("dentro") || {};
             try {
                 interaction.reply({
                     embeds: [
@@ -1156,7 +1200,8 @@ module.exports = {
                     ],
                     ephemeral: true
                 }).then(async () => {
-                    await config.set("dentro.cor", text);
+                    dentroAtual.cor = text;
+                    await config.set("dentro", dentroAtual);
                     embedticketedit();
                 }).catch(() => {
                     interaction.reply({ content: `❌ | Coloque uma cor hexadecimal valida!`, ephemeral: true });
@@ -1183,8 +1228,10 @@ module.exports = {
         }
         if (customId.endsWith("_bannerembedmodal")) {
             const text = interaction.fields.getTextInputValue("text");
+            const dentroAtual = await config.get("dentro") || {};
             if (text === "remover") {
-                await config.set("dentro.banner", text);
+                dentroAtual.banner = text;
+                await config.set("dentro", dentroAtual);
                 embedticket();
                 return;
             }
@@ -1197,7 +1244,8 @@ module.exports = {
                     ],
                     ephemeral: true
                 }).then(async () => {
-                    await config.set("dentro.banner", text);
+                    dentroAtual.banner = text;
+                    await config.set("dentro", dentroAtual);
                     embedticketedit();
                 }).catch(() => {
                     interaction.reply({ content: `❌ | Coloque uma imagem valida!`, ephemeral: true });

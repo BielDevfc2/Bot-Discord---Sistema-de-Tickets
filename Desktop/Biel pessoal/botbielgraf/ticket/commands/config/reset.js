@@ -1,14 +1,14 @@
-const { ApplicationCommandType, EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder, ModalBuilder, TextInputBuilder } = require("discord.js");
+const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder, ModalBuilder, TextInputBuilder } = require("discord.js");
 const {JsonDatabase} = require("wio.db");
 const config = new JsonDatabase({databasePath:"./db/config.json"});
-
-
+const logger = require("../../util/logger");
 
 module.exports = {
-    name:"reset",
-    description:"[👑 / Only Owner] RESETE O BOT",
-    type: ApplicationCommandType.ChatInput,
-    run: async(client, interaction) => {
+    data: new SlashCommandBuilder()
+        .setName('reset')
+        .setDescription('👑 [Apenas Dono] RESETE O BOT'),
+    
+    async execute(interaction) {
         if(interaction.user.id !== process.env.OWNER_ID) return interaction.reply({content:`❌ | Você não tem permissão para executar este comando!`, ephemeral:true});
         const modal = new ModalBuilder()
         .setCustomId("resetmodal")
@@ -35,4 +35,5 @@ module.exports = {
         modal.addComponents(new ActionRowBuilder().addComponents(text1));
 
         return interaction.showModal(modal);
-}}
+    }
+};

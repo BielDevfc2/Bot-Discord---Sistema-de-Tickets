@@ -1,23 +1,23 @@
 const fs = require("fs");
+const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 const { JsonDatabase } = require("wio.db");
 const config = new JsonDatabase({databasePath:"./db/config.json"});
 const axios = require("axios");
 const https = require("https");
-const { ApplicationCommandType, ApplicationCommandOptionType } = require("discord.js");
+const logger = require("../../util/logger");
 
 module.exports = {
-    name: "trocarqrcode",
-    description: "[🔧] Trocar a imagem do QrCode.",
-    type: ApplicationCommandType.ChatInput,
-    options: [
-        { 
-            name:"imagem",
-            type: ApplicationCommandOptionType.Attachment,
-            required: true,
-            description:"Coloque a imagem que irá ser trocada."
-        }
-    ],
-    run: async (client, interaction) => {
+    data: new SlashCommandBuilder()
+        .setName('trocarqrcode')
+        .setDescription('🔧 Trocar a imagem do QrCode')
+        .addAttachmentOption(option =>
+            option
+                .setName('imagem')
+                .setDescription('Coloque a imagem que irá ser trocada')
+                .setRequired(true)
+        ),
+    
+    async execute(interaction) {
         try {
             if(interaction.user.id !== process.env.OWNER_ID) {
                 return interaction.reply({
@@ -97,7 +97,7 @@ module.exports = {
             });
 
         } catch (error) {
-            console.error("Erro em trocarqrcode:", error);
+            logger.error("Erro em trocarqrcode:", {error: error.message});
             await interaction.reply({
                 content: `❌ | Erro: ${error.message}`,
                 ephemeral: true
