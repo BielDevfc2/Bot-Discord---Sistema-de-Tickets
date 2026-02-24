@@ -1,6 +1,8 @@
 const { SlashCommandBuilder, EmbedBuilder, ModalBuilder, TextInputBuilder, ActionRowBuilder } = require("discord.js");
 const logger = require("../../util/logger");
 const { createOrder, sendOrderLog } = require("../../util/orderSystem");
+const path = require("path");
+const { JsonDatabase } = require("wio.db");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -11,13 +13,7 @@ module.exports = {
                 .setName('servico')
                 .setDescription('Nome do serviço desejado')
                 .setRequired(true)
-                .addChoices(
-                    { name: 'Logo Premium', value: 'Logo Premium' },
-                    { name: 'Design de Banner', value: 'Design de Banner' },
-                    { name: 'Edição de Vídeo', value: 'Edição de Vídeo' },
-                    { name: 'Configuração de Servidor', value: 'Configuração de Servidor' },
-                    { name: 'Outro Serviço', value: 'Outro' }
-                )
+                .setAutocomplete(true)
         )
         .addNumberOption(option =>
             option
@@ -29,6 +25,7 @@ module.exports = {
 
     async execute(interaction) {
         try {
+            const configDB = new JsonDatabase({ databasePath: path.join(__dirname, "../../db/config.json") });
             const servico = interaction.options.getString('servico');
             const valor = interaction.options.getNumber('valor');
 
@@ -74,10 +71,6 @@ module.exports = {
                     .setPlaceholder('150.50');
 
                 modal.addComponents(new ActionRowBuilder().addComponents(valorInput));
-
-                // Armazenar serviço em cache temporário
-                interaction.client.pedidosPending = interaction.client.pedidosPending || {};
-                interaction.client.pedidosPending[`${interaction.user.id}_${Date.now()}`] = servico;
 
                 return interaction.showModal(modal);
             }
@@ -134,6 +127,27 @@ module.exports = {
                 content: `❌ | Erro ao processar comando: ${error.message}`,
                 ephemeral: true
             }).catch(() => {});
+        }
+    },
+
+    async autocomplete(interaction) {
+        try {
+            const configDB = new JsonDatabase({ databasePath: path.join(__dirname, "../../db/config.json") });
+            const servicos = await configDB.get("servicos") || [];
+            
+            const focused = interaction.options.getFocused();
+            const choices = servicos.map(s => s.value);
+            choices.push('Outro');
+
+            const filtered = choices.filter(choice => 
+                choice.toLowerCase().startsWith(focused.toLowerCase())
+            );
+
+            await interaction.respond(
+                filtered.map(choice => ({ name: choice, value: choice }))
+            );
+        } catch (error) {
+            logger.error("Erro em autocomplete /pedido:", { error: error.message });
         }
     }
 };

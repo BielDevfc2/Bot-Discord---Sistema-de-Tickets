@@ -71,5 +71,11 @@
         "systemsendmsg": true,
         "topic": false
     },
+    "servicos": [
+        { "name": "Logo Premium", "value": "Logo Premium", "emoji": "🎨" },
+        { "name": "Design de Banner", "value": "Design de Banner", "emoji": "🖼️" },
+        { "name": "Edição de Vídeo", "value": "Edição de Vídeo", "emoji": "🎬" },
+        { "name": "Configuração de Servidor", "value": "Configuração de Servidor", "emoji": "⚙️" }
+    ],
     "archiveName": "1000046554_x4.png"
 }
