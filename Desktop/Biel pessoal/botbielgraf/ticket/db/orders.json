@@ -1,0 +1,23 @@
+{
+  "exemplo": {
+    "orderId": "BG-4821",
+    "secureCode": "BG-2026-02-24-A8K3L",
+    "guaranteeCode": "GAR-4821-BR",
+    "clienteId": "123456789",
+    "servico": "Logo Premium",
+    "valor": 120.50,
+    "descricao": "Logo personalizada em 3 estilos diferentes",
+    "status": "Pago",
+    "staffResponsavel": "987654321",
+    "dataCriacao": "2026-02-24",
+    "dataPagamento": "2026-02-24",
+    "dataFinalizacao": null,
+    "notas": [
+      {
+        "author": "987654321",
+        "texto": "Cliente enviou referências adicionais",
+        "timestamp": "2026-02-24T15:30:00Z"
+      }
+    ]
+  }
+}
