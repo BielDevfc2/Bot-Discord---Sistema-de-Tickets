@@ -1,7 +1,7 @@
 const fs = require("fs");
 const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 const { JsonDatabase } = require("wio.db");
-const config = new JsonDatabase({databasePath:"./db/config.json"});
+const config = new JsonDatabase({databasePath: require("path").join(__dirname, "../../db/config.json")});
 const axios = require("axios");
 const https = require("https");
 const logger = require("../../util/logger");

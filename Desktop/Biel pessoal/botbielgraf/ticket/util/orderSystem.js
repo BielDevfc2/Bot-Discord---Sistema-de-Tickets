@@ -77,10 +77,11 @@ async function createOrder(clienteId, servico, valor, descricao = "") {
         };
         
         await ordersDB.set(`order_${secureCode}`, order);
-        await ordersDB.set(`client_${clienteId}`, (await ordersDB.get(`client_${clienteId}`)) || [], (arr) => {
-            arr.push(secureCode);
-            return arr;
-        });
+        
+        // Adicionar secureCode à lista de pedidos do cliente
+        const clientOrders = (await ordersDB.get(`client_${clienteId}`)) || [];
+        clientOrders.push(secureCode);
+        await ordersDB.set(`client_${clienteId}`, clientOrders);
         
         logger.success(`Pedido criado: ${orderId} (${secureCode})`);
         return order;
@@ -298,6 +299,4 @@ module.exports = {
     getSalesStats,
     validateGuaranteeCode,
     sendOrderLog
-    getSalesStats,
-    validateGuaranteeCode
 };

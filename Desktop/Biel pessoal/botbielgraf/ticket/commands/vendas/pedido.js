@@ -54,7 +54,10 @@ module.exports = {
                     new ActionRowBuilder().addComponents(descricaoInput)
                 );
 
-                return interaction.showModal(modal);
+                await interaction.showModal(modal).catch(err => {
+                    logger.error("Erro ao mostrar modal", { error: err.message });
+                });
+                return;
             }
 
             // Se não forneceu valor para serviços pré-definidos, pedir no modal
@@ -72,7 +75,10 @@ module.exports = {
 
                 modal.addComponents(new ActionRowBuilder().addComponents(valorInput));
 
-                return interaction.showModal(modal);
+                await interaction.showModal(modal).catch(err => {
+                    logger.error("Erro ao mostrar modal de valor", { error: err.message });
+                });
+                return;
             }
 
             // Criar pedido com serviço e valor
@@ -133,21 +139,32 @@ module.exports = {
     async autocomplete(interaction) {
         try {
             const configDB = new JsonDatabase({ databasePath: path.join(__dirname, "../../db/config.json") });
-            const servicos = configDB.get("servicos") || [];
             
-            const focused = interaction.options.getFocused();
-            const choices = servicos.map(s => s.value);
+            // Obter serviços e garantir que é um array
+            let servicos = configDB.get("servicos") || [];
+            if (!Array.isArray(servicos)) {
+                servicos = [];
+            }
+            
+            // Mapear para strings e adicionar "Outro"
+            const choices = servicos
+                .map(s => typeof s === 'string' ? s : (s?.nome || s?.value || s?.label || ''))
+                .filter(s => s.length > 0);
             choices.push('Outro');
 
+            const focused = interaction.options.getFocused() || '';
             const filtered = choices.filter(choice => 
                 choice.toLowerCase().startsWith(focused.toLowerCase())
-            );
+            ).slice(0, 25); // Discord permite máximo 25 opções
 
             await interaction.respond(
                 filtered.map(choice => ({ name: choice, value: choice }))
-            );
+            ).catch(err => {
+                logger.warn("Erro ao responder autocomplete", { error: err.message });
+            });
         } catch (error) {
-            logger.error("Erro em autocomplete /pedido:", { error: error.message });
+            logger.error("Erro em autocomplete /pedido", { error: error.message });
+            await interaction.respond([{ name: 'Outro', value: 'Outro' }]).catch(() => {});
         }
     }
 };

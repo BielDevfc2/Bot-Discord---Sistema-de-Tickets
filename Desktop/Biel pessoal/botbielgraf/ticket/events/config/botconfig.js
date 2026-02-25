@@ -1,9 +1,10 @@
 const { ApplicationCommandType, EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder, ButtonBuilder, ModalBuilder, TextInputBuilder, RoleSelectMenuBuilder, ChannelSelectMenuBuilder, ChannelType } = require("discord.js");
 const { JsonDatabase } = require("wio.db");
-const config = new JsonDatabase({ databasePath: "./db/config.json" });
-const perfil = new JsonDatabase({ databasePath: "./db/perfil.json" });
-const ct = new JsonDatabase({ databasePath: "./db/category.json" });
+const config = new JsonDatabase({ databasePath: require("path").join(__dirname, "../../db/config.json") });
+const perfil = new JsonDatabase({ databasePath: require("path").join(__dirname, "../../db/perfil.json") });
+const ct = new JsonDatabase({ databasePath: require("path").join(__dirname, "../../db/category.json") });
 const https = require("https");
+const { createConfigBackup } = require("../../util/backupSystem");
 
 // Função para consolidar o objeto painel com todos os campos obrigatórios
 async function consolidarPainel() {
@@ -29,13 +30,93 @@ async function consolidarPainel() {
   }
 }
 
+// Função wrapper para salvar com backup automático
+async function configSetWithBackup(key, value, reason = "editação de config") {
+  try {
+    await config.set(key, value);
+    createConfigBackup(reason);
+    return true;
+  } catch (error) {
+    console.error("Erro ao salvar config com backup:", error);
+    return false;
+  }
+}
+
+// Função para processar e validar cores
+function processarCor(cor) {
+    if (!cor) return 0x000000;
+    if (typeof cor === "string" && cor.toLowerCase() === "random") return null;
+    if (typeof cor === "string" && cor.startsWith("#")) {
+        try {
+            return parseInt(cor.slice(1), 16);
+        } catch (e) {
+            console.warn(`Cor hexadecimal inválida: ${cor}`);
+            return 0x000000;
+        }
+    }
+    return cor;
+}
+
 module.exports = {
     name: "interactionCreate",
     run: async (interaction, client) => {
         const { customId } = interaction;
         if (!customId) return;
+
+        // Handler para restauração de backups
+        if (customId.startsWith("restore_")) {
+            if (!interaction.member.permissions.has("ADMINISTRATOR")) {
+                return interaction.reply({
+                    content: '❌ | Apenas administradores podem usar este comando.',
+                    ephemeral: true
+                });
+            }
+
+            const backupIndex = parseInt(customId.split("_")[1]);
+            const { restoreFromBackup } = require("../../../util/backupSystem");
+            const logger = require("../../../util/logger");
+
+            await interaction.deferReply({ ephemeral: true });
+
+            try {
+                const success = restoreFromBackup(backupIndex);
+                if (success) {
+                    await interaction.editReply({
+                        content: `✅ | Config restaurada com sucesso do backup #${backupIndex}!\n\n⚠️ O bot foi reiniciado. Aguarde alguns segundos para ver as mudanças.`,
+                        components: []
+                    });
+                    logger.success(`Backup #${backupIndex} restaurado pelo usuário ${interaction.user.tag}`);
+                } else {
+                    await interaction.editReply({
+                        content: `❌ | Erro ao restaurar o backup. Verifique os logs.`,
+                        components: []
+                    });
+                }
+            } catch (error) {
+                logger.error("Erro ao restaurar backup", { error: error.message });
+                await interaction.editReply({
+                    content: `❌ | Erro: ${error.message}`,
+                    components: []
+                });
+            }
+            return;
+        }
+
+        // Handler para cancelar restauração
+        if (customId === "cancel_restore") {
+            return interaction.update({
+                content: '✅ | Restauração cancelada.',
+                components: [],
+                embeds: []
+            });
+        }
+
         const userid = customId.split("_")[0];
         if (interaction.user.id !== userid) return;
+        
+        // Garantir que o painel está consolidado com todos os campos obrigatórios
+        await consolidarPainel();
+        
         const color = await config.get("botconfig.cor");
 
         if (customId.endsWith("_botconfig")) {
@@ -1036,22 +1117,32 @@ module.exports = {
         if (customId.endsWith("_corpainelmodal")) {
             const text = interaction.fields.getTextInputValue("text");
             const painelAtual = await config.get("painel") || {};
+            
+            // Validar cor ANTES de tentar usar
+            const corProcessada = processarCor(text);
+            
+            if (corProcessada === undefined) {
+                // Cor inválida
+                return interaction.reply({ content: `❌ | Coloque uma Cor Valida (ex: #FF0000 ou "Random")`, ephemeral: true });
+            }
+            
             try {
                 interaction.reply({
                     embeds: [
                         new EmbedBuilder()
                             .setDescription(`📋 | Nova cor adicionada: \`${text}\``)
-                            .setColor(text)
+                            .setColor(corProcessada)
                     ],
                     ephemeral: true
                 }).then(async () => {
                     painelAtual.cor = text;
                     await config.set("painel", painelAtual);
+                    createConfigBackup("alteração de cor do painel");
                     paineledit();
                 }).catch(() => {
                     interaction.reply({ content: `❌ | Coloque uma Cor Valida`, ephemeral: true });
                 })
-            } catch {
+            } catch (error) {
                 interaction.reply({ content: `❌ | Coloque uma Cor Valida!`, ephemeral: true });
             }
         } //
@@ -1080,6 +1171,7 @@ module.exports = {
             const painelAtual = await config.get("painel") || {};
             painelAtual.placeholder = text;
             await config.set("painel", painelAtual);
+            createConfigBackup("alteração de placeholder do painel");
             painel();
         } //
 
@@ -1191,12 +1283,21 @@ module.exports = {
         if (customId.endsWith("_corembedmodal")) {
             const text = interaction.fields.getTextInputValue("text");
             const dentroAtual = await config.get("dentro") || {};
+            
+            // Validar cor ANTES de tentar usar
+            const corProcessada = processarCor(text);
+            
+            if (corProcessada === undefined) {
+                // Cor inválida
+                return interaction.reply({ content: `❌ | Coloque uma Cor Valida (ex: #FF0000 ou "Random")`, ephemeral: true });
+            }
+            
             try {
                 interaction.reply({
                     embeds: [
                         new EmbedBuilder()
                             .setDescription(`Cor alterada para: \`${text}\``)
-                            .setColor(text)
+                            .setColor(corProcessada)
                     ],
                     ephemeral: true
                 }).then(async () => {
@@ -1206,7 +1307,7 @@ module.exports = {
                 }).catch(() => {
                     interaction.reply({ content: `❌ | Coloque uma cor hexadecimal valida!`, ephemeral: true });
                 })
-            } catch {
+            } catch (error) {
                 interaction.reply({ content: `❌ | Coloque uma cor hexadecimal valida!`, ephemeral: true });
             }
         }
@@ -2829,7 +2930,7 @@ module.exports = {
             const tick = await config.get(`painel`);
             const embed = new EmbedBuilder()
                 .setAuthor({ name: "Personalização do Painel Ticket", iconURL: interaction.client.user.displayAvatarURL() })
-                .setColor(tick.cor)
+                .setColor(processarCor(tick.cor))
                 .setTitle(`${tick.title}`);
             let desc = tick.desc;
             desc = desc.replace("${interaction.guild.name}", interaction.guild.name);
@@ -2905,7 +3006,7 @@ module.exports = {
         async function embedticket() {
             const tick = await config.get(`dentro`);
             const embed = new EmbedBuilder().setAuthor({ name: `Personalização da Embed de Ticket`, iconURL: interaction.client.user.displayAvatarURL() })
-                .setColor(tick.cor)
+                .setColor(processarCor(tick.cor))
                 .setDescription(`${tick.desc}`);
             if (tick.banner.startsWith("https://")) {
                 embed.setImage(tick.banner);
@@ -2967,7 +3068,7 @@ module.exports = {
         async function embedticketedit() {
             const tick = await config.get(`dentro`);
             const embed = new EmbedBuilder().setAuthor({ name: `Personalização da Embed de Ticket`, iconURL: interaction.client.user.displayAvatarURL() })
-                .setColor(tick.cor)
+                .setColor(processarCor(tick.cor))
                 .setDescription(`${tick.desc}`);
             if (tick.banner.startsWith("https://")) {
                 embed.setImage(tick.banner);
@@ -3092,7 +3193,7 @@ module.exports = {
             const tick = await config.get(`painel`);
             const embed = new EmbedBuilder()
                 .setAuthor({ name: "Personalização do Painel Ticket", iconURL: interaction.client.user.displayAvatarURL() })
-                .setColor(tick.cor)
+                .setColor(processarCor(tick.cor))
                 .setTitle(`${tick.title}`);
             let desc = tick.desc;
             desc = desc.replace("${interaction.guild.name}", interaction.guild.name);

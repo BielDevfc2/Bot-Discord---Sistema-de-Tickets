@@ -1,28 +1,96 @@
 const { InteractionType } = require("discord.js");
+const fs = require('fs');
+const path = require('path');
 const logger = require("../../util/logger");
 const security = require("../../util/security");
 const embeds = require("../../util/embeds");
 
 module.exports = {
     name: "interactionCreate",
-    run: async (interaction, client) => {
+    run: async (interaction, client = interaction.client) => {
         try {
+            // Tratar AutocompleteInteraction
+            if (interaction.type === 4) { // AutocompleteInteraction
+                try {
+                    const cmd = client.slashCommands.get(interaction.commandName);
+                    if (cmd?.autocomplete) {
+                        await cmd.autocomplete(interaction);
+                    }
+                } catch (error) {
+                    logger.warn(`Erro em autocomplete: ${interaction.commandName}`, {
+                        error: error.message
+                    });
+                }
+                return;
+            }
+
             if (interaction.type === InteractionType.ApplicationCommand) {
                 const cmd = client.slashCommands.get(interaction.commandName);
 
                 if (!cmd) {
-                    logger.warn(`Comando não encontrado: ${interaction.commandName}`, {
-                        userId: interaction.user.id,
-                        guild: interaction.guild?.name || 'DM'
-                    });
-                    
-                    return interaction.reply({
-                        embeds: [embeds.errorEmbed(
-                            'Comando Não Encontrado',
-                            `O comando \`/${interaction.commandName}\` não existe ou foi removido.`
-                        )],
-                        ephemeral: true
-                    });
+                    // Tentar carregar dinamicamente o comando a partir da pasta `commands`
+                    try {
+                        const commandsRoot = path.join(__dirname, '../../commands');
+                        const folders = fs.readdirSync(commandsRoot).filter(f => fs.statSync(path.join(commandsRoot, f)).isDirectory());
+                        for (const folder of folders) {
+                            const files = fs.readdirSync(path.join(commandsRoot, folder)).filter(f => f.endsWith('.js'));
+                            for (const file of files) {
+                                try {
+                                    const filePath = path.join(commandsRoot, folder, file);
+                                    delete require.cache[require.resolve(filePath)];
+                                    const possible = require(filePath);
+                                    const possibleName = possible?.data?.name || possible?.name;
+                                    if (possibleName === interaction.commandName) {
+                                        client.slashCommands.set(possibleName, possible);
+                                        // garantir que o array de registro contenha o comando
+                                        client.slashCommandsArray = client.slashCommandsArray || [];
+                                        const payloadCmd = possible.data && typeof possible.data.toJSON === 'function' ? possible.data.toJSON() : (possible.data || possible);
+                                        if (!client.slashCommandsArray.find(c => c && c.name === payloadCmd.name)) {
+                                            client.slashCommandsArray.push(payloadCmd);
+                                        }
+                                        cmd = possible;
+                                        logger.info(`Comando carregado dinâmicamente: ${possibleName}`);
+                                        break;
+                                    }
+                                } catch (e) {
+                                    // ignorar erros de require individuais
+                                }
+                            }
+                            if (cmd) break;
+                        }
+                    } catch (e) {
+                        logger.warn('Falha ao tentar carregar comando dinamicamente', { error: e.message });
+                    }
+
+                    if (!cmd) {
+                        const loaded = Array.from((client.slashCommands && client.slashCommands.keys && typeof client.slashCommands.keys === 'function') ? client.slashCommands.keys() : []);
+                        logger.warn(`Comando não encontrado: ${interaction.commandName}`, {
+                            userId: interaction.user.id,
+                            guild: interaction.guild?.name || 'DM',
+                            loadedCount: loaded.length,
+                            sampleLoaded: loaded.slice(0, 25)
+                        });
+
+                        const payload = {
+                            embeds: [embeds.errorEmbed(
+                                'Comando Não Encontrado',
+                                `O comando \`/${interaction.commandName}\` não existe ou foi removido.`
+                            )],
+                            ephemeral: true
+                        };
+
+                        try {
+                            return await interaction.reply(payload);
+                        } catch (err) {
+                            logger.warn('Falha ao responder comando não encontrado, tentando followUp', { error: err.message });
+                            try {
+                                return await interaction.followUp(payload);
+                            } catch (err2) {
+                                logger.error('Não foi possível notificar usuário sobre comando não encontrado', { error: err2.message });
+                                return;
+                            }
+                        }
+                    }
                 }
 
                 // Validar rate limit e segurança

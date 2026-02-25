@@ -25,7 +25,7 @@ module.exports = {
     try {
       const guildId = interaction.guild.id;
       const sub = interaction.options.getSubcommand();
-      const path = './db/antiabuso.json';
+      const path = require('path').join(__dirname, '../../db/antiabuso.json');
 
       // Verificar permissão
       const staffRole = cfg?.cargo_staff;
@@ -44,8 +44,14 @@ module.exports = {
         });
       }
 
-      // Inicializar dados
-      let data = readJson(path) || {};
+      // Inicializar dados com garantia de existência
+      let data = {};
+      try {
+        data = readJson(path) || {};
+      } catch (e) {
+        logger.warn('Erro ao ler antiabuso.json, criando novo', { error: e.message });
+      }
+      
       if (!data.settings) data.settings = {};
       if (!data.data) data.data = {};
       if (!data.data[guildId]) data.data[guildId] = {};

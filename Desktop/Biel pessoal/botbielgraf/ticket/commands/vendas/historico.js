@@ -120,9 +120,17 @@ module.exports = {
 
         } catch (error) {
             logger.error("Erro em /historico:", { error: error.message });
-            await interaction.editReply({
-                content: `❌ | Erro ao processar comando: ${error.message}`
-            }).catch(() => {});
+            
+            if (!interaction.replied && !interaction.deferred) {
+                await interaction.reply({
+                    content: `❌ | Erro ao processar comando: ${error.message}`,
+                    ephemeral: true
+                }).catch(() => {});
+            } else if (interaction.deferred) {
+                await interaction.editReply({
+                    content: `❌ | Erro ao processar comando: ${error.message}`
+                }).catch(() => {});
+            }
         }
     }
 };

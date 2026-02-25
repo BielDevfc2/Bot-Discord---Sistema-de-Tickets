@@ -877,7 +877,7 @@ module.exports = {
                             .setEmoji("<:hyperapps45:1218985928652099594>")
                         )
                     ]
-                })
+                }).catch(() => {});
 
             } 
         }).catch(() => {
@@ -919,12 +919,23 @@ module.exports = {
             // Criar transcript
             let attachment = null;
             try {
-                attachment = await createTranscript(channel);
+                // Usar timeout para evitar travamentos
+                const transcriptPromise = createTranscript(channel);
+                const timeoutPromise = new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('Transcript timeout')), 10000)
+                );
+                
+                attachment = await Promise.race([transcriptPromise, timeoutPromise]);
                 if (attachment && attachment.attachment) {
-                    await fs.writeFileSync(`${channelId}.html`, attachment.attachment.toString());
+                    try {
+                        await fs.writeFileSync(`${channelId}.html`, attachment.attachment.toString());
+                    } catch (writeErr) {
+                        logger.warn("Erro ao salvar arquivo HTML", { error: writeErr.message });
+                    }
                 }
             } catch (e) {
                 logger.warn("Erro ao criar transcript", { error: e.message });
+                attachment = null;
             }
             
             // Upload do transcript
@@ -1026,11 +1037,19 @@ module.exports = {
             }
 
             // Deletar canal após 5 segundos
-            setTimeout(async() => { 
+            setTimeout(async () => { 
                 try {
-                    await channel.delete().catch(err => logger.warn("Erro ao deletar canal", { error: err.message }));
+                    const channelToDelete = interaction.guild.channels.cache.get(channelId);
+                    if (channelToDelete) {
+                        await channelToDelete.delete("Ticket finalizado").catch(err => {
+                            logger.warn("Erro ao deletar canal", { error: err.message, channelId });
+                        });
+                        logger.success(`Canal de ticket deletado: ${channelId}`);
+                    } else {
+                        logger.warn("Canal não encontrado para deletar", { channelId });
+                    }
                 } catch (error) {
-                    logger.error("Erro crítico ao deletar canal", { error: error.message });
+                    logger.error("Erro crítico ao deletar canal", { error: error.message, channelId });
                 }
             }, 5000);
             
@@ -1040,116 +1059,6 @@ module.exports = {
                 content: `❌ | Erro ao fechar ticket: ${error.message}`,
                 ephemeral: true
             }).catch(() => {});
-        }
-            
-            if(logs) {
-                let desc = await config.get("mensagem.logs_admin"); 
-                desc = desc.replace(/#{user}/g, `${owner}`);
-                desc = desc.replace(/#{userid}/g, `${t.owner}`);
-                desc = desc.replace(/#{data}/g, `${t.data}`);
-                desc = desc.replace(/#{staff}/g, `${interaction.user}`);
-                desc = desc.replace(/#{ticket}/g, interaction.channel.id);
-                desc = desc.replace(/#{assumido}/g, `${assumed}`);
-                let c = [];
-                if(await config.get("transcript.sistema")) {
-                    c = components;
-                }
-                
-
-                logs.send({
-                    embeds:[
-                        new EmbedBuilder()
-                        .setTitle(`${interaction.guild.name} | Ticket Deletado`)
-                        .setDescription(`${desc}`)
-                        .setTimestamp()
-                        .setFields({
-                            name:"📕・Motivo do Fechamento:",
-                            value:`**${text}**`
-                        })
-                        .setColor(colorEmbed)
-                    ],
-                    components: c
-                })
-            }
-            if(owner) {
-                let c = [];
-                if(await config.get("transcript.Usuário")) {
-                    c = components;
-                }
-                let desc = await config.get("mensagem.logs_member");
-                desc = desc.replace(/#{user}/g, `${owner}`);
-                desc = desc.replace(/#{userid}/g, `${t.owner}`);
-                desc = desc.replace(/#{data}/g, `${t.data}`);
-                desc = desc.replace(/#{staff}/g, `${interaction.user}`);
-                desc = desc.replace(/#{ticket}/g, interaction.channel.id);
-                desc = desc.replace(/#{assumido}/g, `${assumed}`);
-                owner?.send({
-                    embeds:[
-                        new EmbedBuilder()
-                        .setTitle(`${interaction.guild.name} | Ticket Finalizado`)
-                        .setDescription(`${desc}`)
-                        .setTimestamp()
-                        .setColor(colorEmbed)
-                        .setFields({
-                            name:"📕・Motivo do Fechamento:",
-                            value:`**${text}**`
-                        })
-                    ],
-                    components: c
-                }).catch(() => {});
-                if(await config.get("botconfig.systemavaliation")) owner?.send({
-                    embeds: [
-                        new EmbedBuilder()
-                        .setDescription("Por favor, avalie o nosso atendimento em geral. Sua opinião é importante!")
-                        .setFooter({text:`Agradecemos por escolher nossos serviços. Obrigado!`, iconURL: interaction.guild.iconURL()})
-                        .setColor("Green")
-                    ],
-                    components: [
-                        new ActionRowBuilder()
-                        .addComponents( 
-                            new StringSelectMenuBuilder()
-                            .setCustomId(`${interaction.channel.id}_avaliarticket`)
-                            .setPlaceholder("Avaliar o Atendimento")
-                            .addOptions(
-                                {
-                                    label:"Péssimo",
-                                    value:"1",
-                                    emoji:"😞"
-                                }, 
-                                {
-                                    label:"Ruim",
-                                    emoji:"😔",
-                                    value:"2"
-                                },
-                                {
-                                    label:"Regular",
-                                    emoji:"😐",
-                                    value:"3"
-                                },
-                                {
-                                    label:"Bom",
-                                    emoji:"😊",
-                                    value:"4"
-                                },
-                                {
-                                    label:"Excelente",
-                                    value:"5",
-                                    emoji: "😊"
-                                }
-                            )
-                        )
-                    ]
-                }).catch(() => {});
-            }
-            
-            try {
-                await fs.unlinkSync(`${interaction.channel.id}.html`);
-                
-              } catch (err) {
-                
-              }
-        } catch(err) {
-			console.log(err);
         }
     }
     if(customId.endsWith("_avaliarticket")) {
@@ -1326,7 +1235,7 @@ module.exports = {
         const t = await db.get(`${interaction.channel.id}`);
         if(id === "assumir_ticket") {
             const assumed = interaction.client.users.cache.get(t.assumido);
-            if(assumed) return interaction.reply({content:`⛔ | Ops... parece que um Staff Assumiu Primeiro...`, ephemeral:true});
+            if(assumed) return interaction.reply({content:`⛔ | Ops... parece que um Staff Assumiu Primeiro...`, ephemeral:true}).catch(() => {});
             const i = interaction.client.users.cache.get(t.owner);
             if(i) {
                 let desc = await config.get("mensagem.assumed");
@@ -1358,7 +1267,7 @@ module.exports = {
                             .setEmoji("<:hyperapps45:1218985928652099594>")
                         )
                     ]
-                }).catch(() => {console.log("DM BLOQUEADA")})
+                }).catch(() => {});
             }
             const logs = interaction.client.channels.cache.get(await config.get("channel_logs"));
             if(logs) {
@@ -1390,7 +1299,7 @@ module.exports = {
                             .setEmoji("<:hyperapps45:1218985928652099594>")
                         )
                     ]
-                })
+                }).catch(() => {});
             }
             perfil.add(`${interaction.user.id}.assumidos`, 1);
             interaction.update({

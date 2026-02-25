@@ -1,1 +1,20 @@
-{}
+{
+    "tte": {
+        "titulo": "tte",
+        "desc": "Clique aqui Para Abrir Ticket",
+        "emoji": "🎫",
+        "categoria": "Não Configurado"
+    },
+    "Teste": {
+        "titulo": "Teste",
+        "desc": "Clique aqui Para Abrir Ticket",
+        "emoji": "🎫",
+        "categoria": "Não Configurado"
+    },
+    "Att": {
+        "titulo": "Att",
+        "desc": "Clique aqui Para Abrir Ticket",
+        "emoji": "🎫",
+        "categoria": "Não Configurado"
+    }
+}

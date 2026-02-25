@@ -22,36 +22,50 @@ module.exports = {
             return;
         }
 
-        // Fallback: se soft-restart falhar em X ms, encerra o processo (espera que um process manager reinicie)
+        // Fallback: se soft-restart falhar em X ms, encerra o processo
         const FALLBACK_MS = 10000;
         let fallback = setTimeout(() => {
-            try { process.exit(0); } catch (e) { process.kill(process.pid); }
+            process.exit(0);
         }, FALLBACK_MS);
 
         try {
-            // Tentar destruir o cliente e relogar (soft-restart)
-            if (client && typeof client.destroy === 'function') {
-                await client.destroy();
+            // Usar o client do próprio interaction
+            const botClient = interaction.client;
+
+            if (!botClient) {
+                clearTimeout(fallback);
+                return await interaction.followUp({ content: '❌ Cliente do bot não encontrado.', ephemeral: true });
+            }
+
+            // Tentar destruir o cliente atual
+            try {
+                await botClient.destroy();
+                await new Promise(r => setTimeout(r, 1000));
+            } catch (e) {
+                logger.error('Erro ao destruir client:', e.message);
             }
 
             // Tentar relogar
-            await client.login(token);
+            await botClient.login(token);
 
             // Quando o client emitir ready, limpar fallback e notificar
-            client.once('ready', async () => {
+            botClient.once('ready', async () => {
                 clearTimeout(fallback);
                 try {
                     await interaction.followUp({ content: '✅ Reiniciado com sucesso (soft-restart).', ephemeral: true });
-                } catch (e) { /* ignore */ }
+                } catch (e) {
+                    logger.error('Erro ao notificar sucesso:', e.message);
+                }
             });
         } catch (err) {
             clearTimeout(fallback);
+            logger.error('Erro no soft-restart:', err.message);
             try {
                 await interaction.followUp({ content: `⚠️ Soft-restart falhou: ${err.message}. Saindo para reiniciar (fallback).`, ephemeral: true });
-            } catch (e) { /* ignore */ }
-            setTimeout(() => {
-                try { process.exit(0); } catch (e) { process.kill(process.pid); }
-            }, 2000);
+            } catch (e) {
+                logger.error('Erro ao notificar falha:', e.message);
+            }
+            process.exit(0);
         }
     }
 };

@@ -107,10 +107,18 @@ module.exports = {
 
         } catch (error) {
             logger.error("Erro em /verpedido:", { error: error.message });
-            await interaction.reply({
-                content: `❌ | Erro ao processar comando: ${error.message}`,
-                ephemeral: true
-            });
+            
+            // Verificar se interação já foi respondida antes de tentar responder
+            if (!interaction.replied && !interaction.deferred) {
+                await interaction.reply({
+                    content: `❌ | Erro ao processar comando: ${error.message}`,
+                    ephemeral: true
+                }).catch(() => {});
+            } else if (interaction.deferred) {
+                await interaction.editReply({
+                    content: `❌ | Erro ao processar comando: ${error.message}`
+                }).catch(() => {});
+            }
         }
     }
 };

@@ -2,6 +2,7 @@ const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 const logger = require("../../util/logger");
 const path = require("path");
 const { JsonDatabase } = require("wio.db");
+const { createConfigBackup } = require("../../util/backupSystem");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -46,8 +47,9 @@ module.exports = {
             // Remover serviço
             servicos.splice(index, 1);
 
-            // Salvar no banco
+            // Salvar no banco e fazer backup automático
             await configDB.set("servicos", servicos);
+            createConfigBackup(`remoção de serviço: ${nome}`);
 
             const embed = new EmbedBuilder()
                 .setColor('#FF0000')

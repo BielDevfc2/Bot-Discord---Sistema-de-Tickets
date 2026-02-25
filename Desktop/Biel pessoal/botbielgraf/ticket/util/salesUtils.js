@@ -9,7 +9,7 @@ const logger = require("./logger");
 
 // Inicializar bancos de dados
 const createDatabase = (name) => {
-    return new JsonDatabase({ databasePath: `./db/${name}.json` });
+    return new JsonDatabase({ databasePath: path.join(__dirname, "../db", `${name}.json`) });
 };
 
 const db = {

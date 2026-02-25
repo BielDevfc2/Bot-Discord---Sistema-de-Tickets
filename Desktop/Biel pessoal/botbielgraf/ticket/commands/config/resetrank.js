@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder, ModalBuilder, TextInputBuilder } = require("discord.js");
 const {JsonDatabase} = require("wio.db");
-const config = new JsonDatabase({databasePath:"./db/config.json"});
+const config = new JsonDatabase({databasePath: require("path").join(__dirname, "../../db/config.json")});
 const logger = require("../../util/logger");
 
 module.exports = { 

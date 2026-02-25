@@ -13,11 +13,19 @@ module.exports = {
         ),
     
     async execute(interaction) {
-		
-		await interaction.reply({content:`Aguarde um momento...`, ephemeral:true});
-		await interaction.channel.send({
-			content:`${interaction.options.getString("mensagem")}`
-		});
-		interaction.editReply({content:`Enviado com sucesso!`});
+        try {
+            await interaction.reply({ content: `Aguarde um momento...`, ephemeral: true });
+            
+            await interaction.channel.send({
+                content: `${interaction.options.getString("mensagem")}`
+            });
+            
+            await interaction.editReply({ content: `✅ Enviado com sucesso!` });
+        } catch (error) {
+            console.error(error);
+            await interaction.editReply({ 
+                content: `❌ Erro ao enviar mensagem: ${error.message}` 
+            });
+        }
     }
 };

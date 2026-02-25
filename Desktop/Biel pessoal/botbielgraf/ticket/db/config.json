@@ -11,7 +11,7 @@
         "title": "Ticket ANT STORE",
         "footer": "Horário de atendimento: 11:00 até 23:00",
         "desc": "- ticket ant store\n\n- ticket ativo das 08:00 as 22:00 segunda a sexta\n\n- suporte rapido e eficaz",
-        "banner": "",
+        "banner": "https://media.discordapp.net/attachments/1234696813165023303/1237228543021158501/nulledticket_1707888290521.png?ex=663ae25f&is=663990df&hm=bf8ebfef87325092861314fcb99d1c4194a8598048c3ea84d303f7e53d7e076f&=&format=webp&quality=lossless&width=550&height=143",
         "cor": "#e600ff",
         "placeholder": "Escolha uma opção:"
     },
@@ -56,7 +56,7 @@
         "assumed": "👋・Olá **#{user}**, seu ticket foi assumido pelo **Staff: #{staff}**.\n📁・Canal do Ticket: **#{ticket}**",
         "ticket_assumed": "👮・**Staff** que assumiu: #{assumido}\n📁・Ticket assumido: #⁠{ticket}"
     },
-    "cargo_staff": "1440805839547007138",
+    "cargo_staff": "1317696354054832279",
     "channel_logs": "1394574939796799508",
     "channel_ava": "1326002308739502101",
     "transcript": {
@@ -72,10 +72,31 @@
         "topic": false
     },
     "servicos": [
-        { "name": "Logo Premium", "value": "Logo Premium", "emoji": "🎨" },
-        { "name": "Design de Banner", "value": "Design de Banner", "emoji": "🖼️" },
-        { "name": "Edição de Vídeo", "value": "Edição de Vídeo", "emoji": "🎬" },
-        { "name": "Configuração de Servidor", "value": "Configuração de Servidor", "emoji": "⚙️" }
+        {
+            "name": "Logo Premium",
+            "value": "Logo Premium",
+            "emoji": "🎨"
+        },
+        {
+            "name": "Design de Banner",
+            "value": "Design de Banner",
+            "emoji": "🖼️"
+        },
+        {
+            "name": "Edição de Vídeo",
+            "value": "Edição de Vídeo",
+            "emoji": "🎬"
+        },
+        {
+            "name": "Configuração de Servidor",
+            "value": "Configuração de Servidor",
+            "emoji": "⚙️"
+        },
+        {
+            "name": "Barrinha",
+            "value": "Barrinha",
+            "emoji": "📦"
+        }
     ],
     "archiveName": "1000046554_x4.png"
 }

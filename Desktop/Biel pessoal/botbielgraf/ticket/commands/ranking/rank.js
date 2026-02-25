@@ -1,12 +1,12 @@
-const { ApplicationCommandType, EmbedBuilder } = require("discord.js");
+const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 const { JsonDatabase } = require("wio.db");
-const perfil = new JsonDatabase({ databasePath: "./db/perfil.json" });
+const perfil = new JsonDatabase({ databasePath: require("path").join(__dirname, "../../db/perfil.json") });
 
 module.exports = {
-    name: "rank",
-    description: "[🧀 / Utilidades] Veja o Ranking de quem mais abriu ticket!",
-    type: ApplicationCommandType.ChatInput,
-    run: async (client, interaction) => {
+    data: new SlashCommandBuilder()
+        .setName("rank")
+        .setDescription("[🧀 / Utilidades] Veja o Ranking de quem mais abriu ticket!"),
+    async execute(interaction) {
         try {
             const all = (await perfil.all())
                 .filter(a => a.data && a.data.ticketsaberto)

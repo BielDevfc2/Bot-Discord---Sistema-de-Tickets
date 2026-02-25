@@ -1,23 +1,233 @@
 {
-  "exemplo": {
-    "orderId": "BG-4821",
-    "secureCode": "BG-2026-02-24-A8K3L",
-    "guaranteeCode": "GAR-4821-BR",
-    "clienteId": "123456789",
-    "servico": "Logo Premium",
-    "valor": 120.50,
-    "descricao": "Logo personalizada em 3 estilos diferentes",
-    "status": "Pago",
-    "staffResponsavel": "987654321",
-    "dataCriacao": "2026-02-24",
-    "dataPagamento": "2026-02-24",
-    "dataFinalizacao": null,
-    "notas": [
-      {
-        "author": "987654321",
-        "texto": "Cliente enviou referências adicionais",
-        "timestamp": "2026-02-24T15:30:00Z"
-      }
-    ]
-  }
+    "exemplo": {
+        "orderId": "BG-4821",
+        "secureCode": "BG-2026-02-24-A8K3L",
+        "guaranteeCode": "GAR-4821-BR",
+        "clienteId": "123456789",
+        "servico": "Logo Premium",
+        "valor": 120.5,
+        "descricao": "Logo personalizada em 3 estilos diferentes",
+        "status": "Pago",
+        "staffResponsavel": "987654321",
+        "dataCriacao": "2026-02-24",
+        "dataPagamento": "2026-02-24",
+        "dataFinalizacao": null,
+        "notas": [
+            {
+                "author": "987654321",
+                "texto": "Cliente enviou referências adicionais",
+                "timestamp": "2026-02-24T15:30:00Z"
+            }
+        ]
+    },
+    "order_BG-2026-02-24-0081Q": {
+        "orderId": "BG-7514",
+        "secureCode": "BG-2026-02-24-0081Q",
+        "guaranteeCode": null,
+        "clienteId": "1215492290995425392",
+        "servico": "Barrinha",
+        "valor": 23,
+        "descricao": "",
+        "prioridade": "Normal",
+        "status": "Aguardando Pagamento",
+        "staffResponsavel": null,
+        "dataCriacao": "2026-02-24",
+        "dataPagamento": null,
+        "dataFinalizacao": null,
+        "notas": []
+    },
+    "order_BG-2026-02-24-36MND": {
+        "orderId": "BG-3868",
+        "secureCode": "BG-2026-02-24-36MND",
+        "guaranteeCode": null,
+        "clienteId": "1215492290995425392",
+        "servico": "Barrinha",
+        "valor": 25,
+        "descricao": "",
+        "prioridade": "Normal",
+        "status": "Aguardando Pagamento",
+        "staffResponsavel": null,
+        "dataCriacao": "2026-02-24",
+        "dataPagamento": null,
+        "dataFinalizacao": null,
+        "notas": []
+    },
+    "order_BG-2026-02-24-EUB7N": {
+        "orderId": "BG-9384",
+        "secureCode": "BG-2026-02-24-EUB7N",
+        "guaranteeCode": null,
+        "clienteId": "1215492290995425392",
+        "servico": "Barrinha",
+        "valor": 25,
+        "descricao": "",
+        "prioridade": "Normal",
+        "status": "Aguardando Pagamento",
+        "staffResponsavel": null,
+        "dataCriacao": "2026-02-24",
+        "dataPagamento": null,
+        "dataFinalizacao": null,
+        "notas": []
+    },
+    "order_BG-2026-02-24-KRS94": {
+        "orderId": "BG-8032",
+        "secureCode": "BG-2026-02-24-KRS94",
+        "guaranteeCode": null,
+        "clienteId": "1215492290995425392",
+        "servico": "Logo Premium",
+        "valor": 50,
+        "descricao": "",
+        "prioridade": "Normal",
+        "status": "Aguardando Pagamento",
+        "staffResponsavel": null,
+        "dataCriacao": "2026-02-25",
+        "dataPagamento": null,
+        "dataFinalizacao": null,
+        "notas": []
+    },
+    "order_BG-2026-02-24-G62NK": {
+        "orderId": "BG-5797",
+        "secureCode": "BG-2026-02-24-G62NK",
+        "guaranteeCode": null,
+        "clienteId": "1215492290995425392",
+        "servico": "Logo Premium",
+        "valor": 12,
+        "descricao": "",
+        "prioridade": "Normal",
+        "status": "Aguardando Pagamento",
+        "staffResponsavel": null,
+        "dataCriacao": "2026-02-25",
+        "dataPagamento": null,
+        "dataFinalizacao": null,
+        "notas": []
+    },
+    "order_BG-2026-02-24-26NUW": {
+        "orderId": "BG-8413",
+        "secureCode": "BG-2026-02-24-26NUW",
+        "guaranteeCode": null,
+        "clienteId": "123456789",
+        "servico": "Logo Premium",
+        "valor": 150,
+        "descricao": "Teste",
+        "prioridade": "Normal",
+        "status": "Aguardando Pagamento",
+        "staffResponsavel": null,
+        "dataCriacao": "2026-02-25",
+        "dataPagamento": null,
+        "dataFinalizacao": null,
+        "notas": []
+    },
+    "test_key": {
+        "teste": "123"
+    },
+    "client_123": [
+        "item1"
+    ],
+    "order_BG-2026-02-24-XMHD5": {
+        "orderId": "BG-8445",
+        "secureCode": "BG-2026-02-24-XMHD5",
+        "guaranteeCode": null,
+        "clienteId": "123456789",
+        "servico": "Logo Premium",
+        "valor": 150,
+        "descricao": "Teste",
+        "prioridade": "Normal",
+        "status": "Aguardando Pagamento",
+        "staffResponsavel": null,
+        "dataCriacao": "2026-02-25",
+        "dataPagamento": null,
+        "dataFinalizacao": null,
+        "notas": []
+    },
+    "client_123456789": [
+        "BG-2026-02-24-XMHD5"
+    ],
+    "order_BG-2026-02-24-YLAGD": {
+        "orderId": "BG-3621",
+        "secureCode": "BG-2026-02-24-YLAGD",
+        "guaranteeCode": null,
+        "clienteId": "999999999",
+        "servico": "Logo Premium",
+        "valor": 250,
+        "descricao": "",
+        "prioridade": "Alta",
+        "status": "Aguardando Pagamento",
+        "staffResponsavel": null,
+        "dataCriacao": "2026-02-25",
+        "dataPagamento": null,
+        "dataFinalizacao": null,
+        "notas": []
+    },
+    "client_999999999": [
+        "BG-2026-02-24-YLAGD"
+    ],
+    "order_BG-2026-02-24-SBYQB": {
+        "orderId": "BG-1322",
+        "secureCode": "BG-2026-02-24-SBYQB",
+        "guaranteeCode": "GAR-1322-BR",
+        "clienteId": "1215492290995425392",
+        "servico": "Logo Premium",
+        "valor": 20,
+        "descricao": "",
+        "prioridade": "Normal",
+        "status": "Pago",
+        "staffResponsavel": "1215492290995425392",
+        "dataCriacao": "2026-02-25",
+        "dataPagamento": "2026-02-25",
+        "dataFinalizacao": null,
+        "notas": []
+    },
+    "client_1215492290995425392": [
+        "BG-2026-02-24-SBYQB",
+        "BG-2026-02-24-ASK5K",
+        "BG-2026-02-24-OJAK0",
+        "BG-2026-02-24-BXDSN"
+    ],
+    "order_BG-2026-02-24-ASK5K": {
+        "orderId": "BG-5322",
+        "secureCode": "BG-2026-02-24-ASK5K",
+        "guaranteeCode": null,
+        "clienteId": "1215492290995425392",
+        "servico": "Barrinha",
+        "valor": 20,
+        "descricao": "",
+        "prioridade": "Normal",
+        "status": "Aguardando Pagamento",
+        "staffResponsavel": null,
+        "dataCriacao": "2026-02-25",
+        "dataPagamento": null,
+        "dataFinalizacao": null,
+        "notas": []
+    },
+    "order_BG-2026-02-24-OJAK0": {
+        "orderId": "BG-7495",
+        "secureCode": "BG-2026-02-24-OJAK0",
+        "guaranteeCode": null,
+        "clienteId": "1215492290995425392",
+        "servico": "Logo Premium",
+        "valor": 12,
+        "descricao": "",
+        "prioridade": "Normal",
+        "status": "Aguardando Pagamento",
+        "staffResponsavel": null,
+        "dataCriacao": "2026-02-25",
+        "dataPagamento": null,
+        "dataFinalizacao": null,
+        "notas": []
+    },
+    "order_BG-2026-02-24-BXDSN": {
+        "orderId": "BG-6142",
+        "secureCode": "BG-2026-02-24-BXDSN",
+        "guaranteeCode": null,
+        "clienteId": "1215492290995425392",
+        "servico": "Logo Premium",
+        "valor": 12,
+        "descricao": "",
+        "prioridade": "Normal",
+        "status": "Aguardando Pagamento",
+        "staffResponsavel": null,
+        "dataCriacao": "2026-02-25",
+        "dataPagamento": null,
+        "dataFinalizacao": null,
+        "notas": []
+    }
 }

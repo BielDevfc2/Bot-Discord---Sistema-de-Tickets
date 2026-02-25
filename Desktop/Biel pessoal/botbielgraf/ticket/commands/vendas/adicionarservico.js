@@ -2,6 +2,7 @@ const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 const logger = require("../../util/logger");
 const path = require("path");
 const { JsonDatabase } = require("wio.db");
+const { createConfigBackup } = require("../../util/backupSystem");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -58,8 +59,9 @@ module.exports = {
                 emoji: emoji
             });
 
-            // Salvar no banco
+            // Salvar no banco e fazer backup automático
             await configDB.set("servicos", servicos);
+            createConfigBackup(`adição de novo serviço: ${nome}`);
 
             const embed = new EmbedBuilder()
                 .setColor('#00FF00')

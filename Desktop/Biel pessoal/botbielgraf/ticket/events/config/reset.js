@@ -1,8 +1,8 @@
 const { ApplicationCommandType, EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder, ButtonBuilder, ModalBuilder, TextInputBuilder, RoleSelectMenuBuilder, ChannelSelectMenuBuilder, ChannelType } = require("discord.js");
 const {JsonDatabase} = require("wio.db");
-const config = new JsonDatabase({databasePath:"./db/config.json"});
-const perfil = new JsonDatabase({databasePath:"./db/perfil.json"});
-const ct = new JsonDatabase({databasePath:"./db/category.json"});
+const config = new JsonDatabase({databasePath: require("path").join(__dirname, "../../db/config.json")});
+const perfil = new JsonDatabase({databasePath: require("path").join(__dirname, "../../db/perfil.json")});
+const ct = new JsonDatabase({databasePath: require("path").join(__dirname, "../../db/category.json")});
 
 const { QuickDB } = require("quick.db");
 const db = new QuickDB({table:"ticket"});

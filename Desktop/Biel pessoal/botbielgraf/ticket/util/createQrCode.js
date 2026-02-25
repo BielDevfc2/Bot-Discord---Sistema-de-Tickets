@@ -2,7 +2,7 @@ const axios = require("axios");
 const FormData = require("form-data");
 const fs = require("fs");
 const { JsonDatabase } = require("wio.db");
-const config = new JsonDatabase({ databasePath: "./db/config.json" });
+const config = new JsonDatabase({ databasePath: require("path").join(__dirname, "../db/config.json") });
 
 
 async function generateQrCode(chave_pix) {
