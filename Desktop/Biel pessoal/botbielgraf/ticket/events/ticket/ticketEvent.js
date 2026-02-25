@@ -11,6 +11,7 @@ const {createTranscript} = require("discord-html-transcripts");
 const axios = require("axios"); 
 const FormData = require("form-data");
 const fs = require("fs");
+const logger = require("../../util/logger");
 const { readJson, writeJson } = require("../../util/jsonDb");
 const { formatBrazilianDateTime, replaceText } = require("../../util/ticketUtils");
 
