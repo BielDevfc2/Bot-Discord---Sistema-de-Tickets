@@ -28,6 +28,8 @@ TOKEN=seu_token_do_bot_aqui
 ### Arquivo: `config.json`
 Este arquivo contém todos os dados de configuração do sistema. Use `db/config.exemple.json` como referência.
 
+> **Nota:** Proteja o arquivo de configuração local `db/config.json` de sobrescritas acidentais. Recomendamos commitar alterações intencionais ou usar variáveis de ambiente/armazenamento persistente em deploys.
+
 **Campos importantes:**
 - `cargo_staff`: ID do cargo que terá acesso ao painel de staff
 - `channel_logs`: ID do canal de logs administrativos
