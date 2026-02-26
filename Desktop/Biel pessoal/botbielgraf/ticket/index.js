@@ -2,10 +2,45 @@ const {Client , GatewayIntentBits,Collection, Partials } = require("discord.js")
 const {JsonDatabase} = require("wio.db");
 require("dotenv").config();
 const logger = require("./util/logger");
+const backupSystem = require("./util/backupSystem");
 const config = new JsonDatabase({databasePath: require("path").join(__dirname, "db/config.json")});
 const axios = require("axios");
 
 logger.section("🚀 INICIANDO ALIENALES BOT V6");
+
+// Garantir que tenhamos um backup do config no startup
+try {
+  backupSystem.initializeBackupDir();
+  backupSystem.createConfigBackup("startup");
+
+  // detectar se config atual é apenas o modelo base (ex: deploy sobrescreveu)
+  try {
+    const examplePath = require("path").join(__dirname, "db/config.exemple.json");
+    if (fs.existsSync(examplePath)) {
+      const example = JSON.stringify(JSON.parse(fs.readFileSync(examplePath, "utf-8")));
+      const current = JSON.stringify(JSON.parse(fs.readFileSync(path.join(__dirname, "db/config.json"), "utf-8")));
+      if (current === example) {
+        logger.warn("Config atual é igual ao modelo base! Tentando restaurar último backup...");
+        const latest = backupSystem.getLatestBackup();
+        if (latest) {
+          backupSystem.restoreFromBackup(1);
+          logger.success("Configuração restaurada automaticamente do último backup.");
+        } else {
+          logger.error("Nenhum backup disponível para restaurar.");
+        }
+      }
+    }
+  } catch (errDetect) {
+    logger.debug("Erro ao verificar igualdade com modelo base", { error: errDetect.message });
+  }
+
+  // Agendar backup automático a cada 30 minutos
+  setInterval(() => {
+    try { backupSystem.autoBackup(); } catch (e) { /* silencioso */ }
+  }, 1000 * 60 * 30);
+} catch (err) {
+  logger.warn("Não foi possível inicializar sistema de backups:", { error: err.message });
+}
 
 const client = new Client({
     intents: Object.keys(GatewayIntentBits),

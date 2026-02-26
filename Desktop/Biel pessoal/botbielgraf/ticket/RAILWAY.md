@@ -70,6 +70,12 @@ No dashboard do Railway:
 
 ## ✨ Passo 4: Deploy
 
+> ⚠️ **Atenção:** o arquivo `db/config.json` é usado para armazenar suas preferências. Para evitar que ele seja sobrescrito pelo código do repositório, você pode:
+> 1. Comitar mudanças manuais sempre que alterar a configuração (como foi feito agora).  
+> 2. Ignorar o arquivo (`.gitignore` já contém `/db/config.json`) e usar backups automáticos (o bot faz isso por padrão). O bot também tenta restaurar automaticamente o último backup se detectar que o config atual é idêntico ao modelo base.  
+> 3. Montar um volume persistente no Railway para o diretório `db/` (consulte a documentação do Railway).  
+
+
 1. Clique **"Deploy"** no dashboard
 2. Aguarde 2-5 minutos
 3. Você verá:
