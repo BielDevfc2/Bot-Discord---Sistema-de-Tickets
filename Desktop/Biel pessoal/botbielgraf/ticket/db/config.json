@@ -1,102 +1,48 @@
 {
-    "open": {
-        "system": "Select",
-        "button": {
-            "label": "Abrir Ticket",
-            "emoji": "🎫",
-            "style": 1
-        }
-    },
-    "painel": {
-        "title": "Ticket ANT STORE",
-        "footer": "Horário de atendimento: 11:00 até 23:00",
-        "desc": "- ticket ant store\n\n- ticket ativo das 08:00 as 22:00 segunda a sexta\n\n- suporte rapido e eficaz",
-        "banner": "https://media.discordapp.net/attachments/1234696813165023303/1237228543021158501/nulledticket_1707888290521.png?ex=663ae25f&is=663990df&hm=bf8ebfef87325092861314fcb99d1c4194a8598048c3ea84d303f7e53d7e076f&=&format=webp&quality=lossless&width=550&height=143",
-        "cor": "#e600ff",
-        "placeholder": "Escolha uma opção:"
-    },
-    "dentro": {
-        "title": "${interaction.guild.name} | TICKET",
-        "desc": "👋・Olá #{user} Seja Bem-Vindo(A) Como podemos te ajudar ?\n\n👤・Usuário: #{user} (#{userid})\n\n📅・Horário: #{data}\n\n📄・Motivo: #{motivo} (apenas se tiver usando o ticket no modo form)\n\n👮・Staff Que Assumiu: #{assumido}\n\nBom #{user}, Peço que aguarde pacientemente a nossa equipe vir lhe atender. Eles já foram acionados.",
-        "banner": "",
-        "footer": "remover",
-        "cor": "Random"
-    },
-    "button": {
-        "sair": {
-            "emoji": "<:x_:1260262376943521934>",
-            "label": "Sair do Ticket",
-            "style": 1,
-            "ativado": true
-        },
-        "membro": {
-            "emoji": "<:pesuau:1287109173598883871>",
-            "label": "Painel Membro",
-            "style": 3,
-            "ativado": true
-        },
-        "staff": {
-            "emoji": "<:config:1287108684916199497>",
-            "label": "Painel Staff",
-            "style": 3,
-            "ativado": true
-        },
-        "fechar": {
-            "emoji": "<:x_:1260262376943521934>",
-            "label": "Fechar Ticket",
-            "style": 4,
-            "ativado": true
-        }
-    },
-    "mensagem": {
-        "staff": "<a:alert_sun:1259645623263563806>  ou preguiçosso #{staff} o mano ta te chamando na porra do ticket #{user} vai pro ticket  #{ticket}",
-        "member": "Ola #{user} um staff esta pronto para te atender o **responsavel pelo ticket **sera o #{staff} **ir pára o ticket** #{ticket}",
-        "logs_member": "👋 Olá #{user} Seu ticket foi Finalizado!\n\n- Data de fechamento: #{data}\n- Staff Responsavel: #{assumido}\n- Fechado Por: #{staff}",
-        "logs_admin": "👥・Dono do Ticket: #{user}\n🛠️・Staff que Fechou: #{staff}\n🔎・Assumido por: #{assumido}\n📅・Data: #{data}",
-        "assumed": "👋・Olá **#{user}**, seu ticket foi assumido pelo **Staff: #{staff}**.\n📁・Canal do Ticket: **#{ticket}**",
-        "ticket_assumed": "👮・**Staff** que assumiu: #{assumido}\n📁・Ticket assumido: #⁠{ticket}"
-    },
-    "cargo_staff": "1317696354054832279",
-    "channel_logs": "1394574939796799508",
-    "channel_ava": "1326002308739502101",
-    "transcript": {
-        "sistema": true,
-        "usuario": true
-    },
-    "botconfig": {
-        "systemavaliation": true,
-        "pix": "bielgraff@gmail.com",
-        "category": null,
-        "cor": "#00FFFF",
-        "systemsendmsg": true,
-        "topic": false
-    },
-    "servicos": [
-        {
-            "name": "Logo Premium",
-            "value": "Logo Premium",
-            "emoji": "🎨"
-        },
-        {
-            "name": "Design de Banner",
-            "value": "Design de Banner",
-            "emoji": "🖼️"
-        },
-        {
-            "name": "Edição de Vídeo",
-            "value": "Edição de Vídeo",
-            "emoji": "🎬"
-        },
-        {
-            "name": "Configuração de Servidor",
-            "value": "Configuração de Servidor",
-            "emoji": "⚙️"
-        },
-        {
-            "name": "Barrinha",
-            "value": "Barrinha",
-            "emoji": "📦"
-        }
-    ],
-    "archiveName": "1000046554_x4.png"
+  "open": {
+    "system": "Select",
+    "button": { "label": "Abrir Ticket", "emoji": "🎫", "style": 1 }
+  },
+  "painel": {
+    "title": "Ticket ANT STORE",
+    "footer": "Horário de atendimento: 11:00 até 23:00",
+    "desc": "- ticket ant store\n\n- ticket ativo das 08:00 as 22:00 segunda a sexta\n\n- suporte rapido e eficaz",
+    "banner": "https://media.discordapp.net/attachments/1234696813165023303/1237228543021158501/nulledticket_1707888290521.png?ex=663ae25f&is=663990df&hm=bf8ebfef87325092861314fcb99d1c4194a8598048c3ea84d303f7e53d7e076f&=&format=webp&quality=lossless&width=550&height=143",
+    "cor": "#e600ff",
+    "placeholder": "Escolha uma opção:"
+  },
+  "dentro": {
+    "title": "${interaction.guild.name} | TICKET",
+    "desc": "👋・Olá #{user} Seja Bem-Vindo(A) Como podemos te ajudar ?\n\n👤・Usuário: #{user} (#{userid})\n\n📅・Horário: #{data}\n\n📄・Motivo: #{motivo} (apenas se tiver usando o ticket no modo form)\n\n👮・Staff Que Assumiu: #{assumido}\n\nBom #{user}, Peço que aguarde pacientemente a nossa equipe vir lhe atender. Eles já foram acionados.",
+    "banner": "",
+    "footer": "remover",
+    "cor": "Random"
+  },
+  "button": {
+    "sair": { "emoji": "<:x_:1260262376943521934>", "label": "Sair do Ticket", "style": 1, "ativado": true },
+    "membro": { "emoji": "<:pesuau:1287109173598883871>", "label": "Painel Membro", "style": 3, "ativado": true },
+    "staff": { "emoji": "<:config:1287108684916199497>", "label": "Painel Staff", "style": 3, "ativado": true },
+    "fechar": { "emoji": "<:x_:1260262376943521934>", "label": "Fechar Ticket", "style": 4, "ativado": true }
+  },
+  "mensagem": {
+    "staff": "<a:alert_sun:1259645623263563806>  ou preguiçosso #{staff} o mano ta te chamando na porra do ticket #{user} vai pro ticket  #{ticket}",
+    "member": "Ola #{user} um staff esta pronto para te atender o **responsavel pelo ticket **sera o #{staff} **ir pára o ticket** #{ticket}",
+    "logs_member": "👋 Olá #{user} Seu ticket foi Finalizado!\n\n- Data de fechamento: #{data}\n- Staff Responsavel: #{assumido}\n- Fechado Por: #{staff}",
+    "logs_admin": "👥・Dono do Ticket: #{user}\n🛠️・Staff que Fechou: #{staff}\n🔎・Assumido por: #{assumido}\n📅・Data: #{data}",
+    "assumed": "👋・Olá **#{user}**, seu ticket foi assumido pelo **Staff: #{staff}**.\n📁・Canal do Ticket: **#{ticket}**",
+    "ticket_assumed": "👮・**Staff** que assumiu: #{assumido}\n📁・Ticket assumido: #⁠{ticket}"
+  },
+  "cargo_staff": "1317696354054832279",
+  "channel_logs": "1394574939796799508",
+  "channel_ava": "1326002308739502101",
+  "transcript": { "sistema": true, "usuario": true },
+  "botconfig": { "systemavaliation": true, "pix": "bielgraff@gmail.com", "category": null, "cor": "#00FFFF", "systemsendmsg": true, "topic": false },
+  "servicos": [
+    { "name": "Logo Premium", "value": "Logo Premium", "emoji": "🎨" },
+    { "name": "Design de Banner", "value": "Design de Banner", "emoji": "🖼️" },
+    { "name": "Edição de Vídeo", "value": "Edição de Vídeo", "emoji": "🎬" },
+    { "name": "Configuração de Servidor", "value": "Configuração de Servidor", "emoji": "⚙️" },
+    { "name": "Barrinha", "value": "Barrinha", "emoji": "📦" }
+  ],
+  "archiveName": "1000046554_x4.png"
 }
